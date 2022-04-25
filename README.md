@@ -23,3 +23,4 @@ The code is licensed under the [MIT license](LICENSE).
 The project kicks off by Team **DeepShanties**, a group of students from [SJTU](https://sjtu.edu.cn/).
 
 ![](https://www.gravatar.com/avatar/6821883522332143bda79005113c8214?s=128)
+![](https://en.gravatar.com/userimage/220590745/fadb6b4f54d866310e217ad7e73d6328.png?size=128)
