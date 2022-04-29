@@ -39,7 +39,7 @@ class Tile:
 
     def __init__(self, constructor = None):
         '''
-        Constructor: __init__(self, constructor = None)
+        Constructor: __init__
 
         ## Description
 
@@ -89,7 +89,7 @@ class Tile:
         elif constructor is None:
             self.id = 0
         else:
-            raise TypeError("Invalid constructor type, must be tile, str, or int")
+            raise TypeError("Invalid constructor type {}, expected tile, str, or int".format(type(constructor)))
 
     def __str_to_id(self, str_id: str) -> int:
         '''
