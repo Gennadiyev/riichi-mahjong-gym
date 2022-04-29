@@ -39,7 +39,7 @@ class Tile:
 
     def __init__(self, constructor = None):
         '''
-        Method: __init__
+        Constructor: __init__(self, constructor = None)
 
         ## Description
 
@@ -262,7 +262,7 @@ class Tile:
 
         - `tile`: copy of the tile
         '''
-        return tile(self)
+        return Tile(self)
 
     def __eq__(self, other):
         '''
