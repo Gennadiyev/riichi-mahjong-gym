@@ -10,7 +10,7 @@ import random
 
 class Tile:
     '''
-    Class: tile
+    Class: Tile
 
     ## Description
     
@@ -107,11 +107,11 @@ class Tile:
 
         The string is converted to an integer ID.
 
-        - `"1m"` ~ `"9m"`: 1~9
-        - `"1p"` ~ `"9p"`: 1~9
-        - `"1s"` ~ `"9s"`: 1~9
-        - `"1z"` ~ `"7z"`: ton, nan, shaa, pei, haku, hatsu, chun
-        - `"0m", "0p", "0s": Red dora 5
+        - `"1m"` ~ `"9m"`: 11~19
+        - `"1p"` ~ `"9p"`: 21~29
+        - `"1s"` ~ `"9s"`: 31~39
+        - `"1z"` ~ `"7z"`: 41~47
+        - `"0m", "0p", "0s": 51, 52, 53
         '''
 
         assert isinstance(str_id, str), "str_id must be a string"
@@ -148,14 +148,16 @@ class Tile:
         '''
         if self.id == 0:
             return ""
-        if self.id < 10:
-            return str(self.id) + "m"
+        elif self.id < 10:
+            return "(invalid)"
         elif self.id < 20:
-            return str(self.id - 10) + "p"
+            return str(self.id - 10) + "m"
         elif self.id < 30:
-            return str(self.id - 20) + "s"
+            return str(self.id - 20) + "p"
         elif self.id < 40:
-            return str(self.id - 30) + "z"
+            return str(self.id - 30) + "s"
+        elif self.id < 50:
+            return str(self.id - 40) + "z"
         elif self.id == 51:
             return "0m"
         elif self.id == 52:

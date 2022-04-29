@@ -158,8 +158,10 @@ class Ruleset:
             rules = ruleset["rules"]
         else:
             raise KeyError("Ruleset file does not contain a 'rules' key.")
+        # Copy rules to prevent overwriting
+        rules_copy = rules.copy()
         # Rules key mapping
-        for key in rules.keys():
+        for key in rules_copy.keys():
             if key in key_mapping:
                 rules[key_mapping[key]] = rules.pop(key)
             elif key in deprecated_key_mapping:

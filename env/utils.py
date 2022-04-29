@@ -22,13 +22,4 @@ def han_calculator(deck: list) -> int:
     `int`
         The number of han of the given deck.
     '''
-    han = 0
-    for tile in deck:
-        if tile.is_honor:
-            han += 1
-        elif tile.is_red:
-            han += 2
-        else:
-            han += 1
-    return han
-
+    
