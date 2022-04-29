@@ -8,7 +8,7 @@ Description:
 
 import random
 
-class tile:
+class Tile:
     '''
     Class: tile
 
@@ -80,7 +80,7 @@ class tile:
         ```
         '''
         self.hidden_id = random.random()
-        if isinstance(constructor, tile):
+        if isinstance(constructor, Tile):
             self.id = constructor.id
         elif isinstance(constructor, str):
             self.id = self.__str_to_id(constructor)
@@ -282,7 +282,7 @@ class tile:
 
         - `bool`: whether the tile is equal to the other tile
         '''
-        return isinstance(other, tile) and self.id == other.id
+        return isinstance(other, Tile) and self.id == other.id
     
     def __ne__(self, other):
         '''
@@ -320,7 +320,7 @@ class tile:
 
         - `bool`: whether the tile is less than the other tile
         '''
-        if not isinstance(other, tile):
+        if not isinstance(other, Tile):
             raise TypeError("Cannot compare tile with non-tile object")
         return self.id < other.id
     
@@ -425,4 +425,4 @@ class tile:
         '''
         return hash(self.id + self.hidden_id)
     
-    
+
