@@ -113,6 +113,7 @@ class Action:
         This action also calls reach.
 
         E.g. `"r51"` (riichi with 0m)
+        `"r60"` (richii with discard)
 
         ### `ron`
 
