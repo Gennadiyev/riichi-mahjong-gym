@@ -44,8 +44,9 @@ min_yaku_mapping = {
 }
 
 default = {
+    "players": 4,
     "enableKuitan": True,
-    "enableAtozuke": True,
+    "enableAtozuke": False,
     "enableMultiRon": True,
     "enableIppatsu": True,
     "enableNoTenPenalty": True,
@@ -104,7 +105,7 @@ class Ruleset:
         ```
         '''
 
-        self.rules = default
+        self.rules = default.copy()
         self.path = None
         self.name = "Default ruleset"
         if isinstance(ruleset_path_or_string, str) and ruleset_path_or_string.endswith('.json'):
@@ -179,6 +180,81 @@ class Ruleset:
             self.name = ruleset["name"]
         else:
             self.name = "Untitled"
+        
+
+    def get_name(self):
+        '''
+        Method: get_name
+
+        ## Description
+
+        Returns the name of the ruleset.
+
+        ## Returns
+
+        `str`
+            The name of the ruleset.
+        '''
+
+        return self.name
+    
+    def get_rules(self):
+        '''
+        Method: get_rules
+
+        ## Description
+
+        Returns the ruleset rules.
+
+        ## Returns
+
+        `dict`
+            The ruleset rules.
+        '''
+
+        return self.rules
+    
+    def get_rule(self, key):
+        '''
+        Method: get_rule
+
+        ## Description
+
+        Returns the ruleset rule for the given key. If the key is not found,
+        returns None.
+
+        ## Parameters
+
+        - `key`: `str`
+            The key of the rule.
+        
+        ## Returns
+
+        `Any`
+            The rule for the given key.
+        '''
+        if key in self.rules:
+            return self.rules[key]
+        else:
+            return None
+
+    def get_string(self):
+        '''
+        Method: get_string
+
+        ## Description
+
+        Returns the ruleset as a json string.
+
+        ## Returns
+
+        `str`
+            The ruleset as a json string.
+        '''
+        return json.encoder.JSONEncoder().encode({
+            "rules": self.rules,
+            "name": self.name
+        })
 
     def export(self, output_path: str):
         '''
@@ -220,7 +296,7 @@ class Ruleset:
 
         ## Description
 
-        Returns a human
+        Returns a human-readable string representation of the ruleset.
 
         ## Returns
 

@@ -11,12 +11,12 @@ def test_ruleset_load():
     ruleset = Ruleset("rules/ruleset.json")
     assert ruleset
     assert ruleset.rules
-    assert ruleset.rules["enableAtozuke"]
+    assert ruleset.rules["enableAtozuke"] == False
 
 def test_default_ruleset():
     ruleset = Ruleset()
     assert ruleset
-    assert ruleset.rules["enableAtozuke"] == True
+    assert ruleset.rules["enableAtozuke"] == False
     assert ruleset.rules["redDora"] == 3
     assert ruleset.name == "Default ruleset"
 
@@ -24,6 +24,7 @@ def test_translated_ruleset():
     ruleset = Ruleset('''{
   "name": "Translated Ruleset",
   "rules": {
+    "players": 4,
     "食断": true,
     "后付": true,
     "enableMultiRon": false,

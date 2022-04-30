@@ -5,7 +5,12 @@ Description:
     This file contains the Deck class, a class that represents a deck of tiles.
 '''
 
+import time
+import random
+
+from numpy import isin
 from env.tiles import Tile
+from env.ruleset import Ruleset
 
 class Deck:
     '''
@@ -57,7 +62,7 @@ class Deck:
         Creates a kokushi musou deck:
         
         ```python
-        >>> deck = Deck("19m19p19s1234567z")
+        >>> deck = Deck("19m19p19s12345677z")
         ```
         '''
         if tiles is None:
@@ -98,6 +103,31 @@ class Deck:
         tiles.sort()
         return tiles
     
+    def __sort_util(self, tile: Tile) -> float:
+        '''
+        Method: __sort_util(tile: `Tile`)
+    
+        ## Description
+    
+        A helper method for sorting the deck.
+    
+        ## Parameters
+    
+        - `tile`: `Tile`
+            A tile to be compared.
+
+        ## Details
+
+        This method replaces `Tile` ID compare method, which is not
+        suitable for sorting. The method overrides red dora comparation
+        and returns the value used in `self.sort()`.
+
+        11 < 12 < 13 < 14 < 51 < 15 < 16 < 17 < 18 < 19, etc.
+        '''
+        if tile.is_red_dora():
+            id = tile.get_id()
+            return 14.5 if id == 51 else 24.5 if id == 52 else 34.5
+
     def sort(self):
         '''
         Method: sort()
@@ -106,17 +136,103 @@ class Deck:
     
         Sorts the deck in ascending order.
         '''
-        self.tiles.sort()
+        self.tiles.sort(lambda tile: self.__sort_util(tile))
+    
+    def parse_list(self, tile_list: list):
+        '''
+        Method: parse_list(list: `list`)
+    
+        ## Description
+    
+        Parses a list of tiles to a list of tiles.
+    
+        ## Parameters
+    
+        - `list`: `list`
+            A list of tiles. Each can be `Tile`, or any object that can be
+            used to create a `Tile` object.
+
+        ## Returns
+
+        A list of `Tile` objects.
+        '''
+        tiles = []
+        for tile in tile_list:
+            if isinstance(tile, Tile):
+                tiles.append(tile)
+            else:
+                tiles.append(Tile(tile))
+        return tiles
+
+    def get_unicode_str(self):
+        '''
+        Method: get_unicode_str()
+    
+        ## Description
+    
+        Prints the deck in a pretty manner. Does not print the red dora.
+        Does your console support Unicode?
+
+        ## Returns
+
+        A string that represents the deck.
+
+        ## Details
+
+        We use Unicode characters to represent tiles.
+        '''
+        if len(self.tiles) == 0:
+            return ""
+        return "".join([tile.get_unicode_tile() for tile in self.tiles])
+    
+    def get_string(self):
+        '''
+        Method: get_string()
+    
+        ## Description
+    
+        Returns the deck in a string format, e.g.
+        `1m2m3m1p2p3p0p5p1s2s3s1z1z1z`.
+    
+        ## Returns
+
+        A string that represents the deck.
+        '''
+        return self.__str__()
+
+    def get_tiles(self):
+        '''
+        Method: get_tiles()
+    
+        ## Description
+    
+        Returns the list of tiles in the deck.
+    
+        ## Returns
+
+        A list of `Tile` objects.
+        '''
+        return self.tiles
+    
+    def pop(self):
+        '''
+        Method: pop()
+    
+        ## Description
+    
+        Removes and returns the last tile in the deck.
+    
+        ## Returns
+
+        A `Tile` object.
+        '''
+        return self.tiles.pop()
 
     def __str__(self):
         return "".join([str(tile) for tile in self.tiles])
-        # o = ""
-        # for tile in self.tiles:
-        #     o += str(tile)
-        # return o
     
     def __repr__(self):
-        return "Deck"
+        return "Deck('{}')".format(self.__str__())
 
     def __len__(self):
         return len(self.tiles)
@@ -135,3 +251,244 @@ class Deck:
     
     def __contains__(self, item):
         return item in self.tiles
+
+class Wall(Deck):
+    '''
+    Class: Wall
+
+    ## Description
+
+    A class that represents a wall of tiles.
+    '''
+
+    tiles = None
+    dora_indicators = None
+    ura_dora_indicators = None
+    starting_hands = None
+    replacements = None
+    mountain = None
+
+    def __init__(self, ruleset: Ruleset, random_seed: int = None, tiles: list or str or None = None):
+        '''
+        Constructor: __init__
+
+        ## Description
+
+        Initializes a new wall from all possible tiles.
+
+        ## Parameters
+
+        - `ruleset`: `Ruleset`
+            The ruleset to use. The wall will be initialized accordingly.
+        - `random_seed`: `int` or `None` (optional, default: `None`)
+            A seed for the random number generator. If no seed is given, the
+            current time is used. **Will be ignored if `tiles` is given.**
+        - `tiles`: `list` or `str` or `None` (optional, default: `None`)
+            A list of tiles or a string that represents a list of tiles. A
+            random shuffle of the tiles will only be performed if this
+            parameter is not provided.
+
+        ## Details
+
+        In fact, only the `redDora` and `players` property of the ruleset is
+        used in wall generation.
+        
+        ## Examples
+
+        To create a random wall with default ruleset (3-dora):
+        
+        ```python
+        >>> ruleset = Ruleset() # Use a default ruleset
+        >>> wall = Wall(ruleset) # Random wall
+        >>> wall = Wall(ruleset, random_seed = 114) # Fixed wall
+        ```
+
+        To create a wall from a list of tiles,
+        call the constructor with a list of tiles.
+
+        ```python
+        >>> ruleset = Ruleset() # Use a default ruleset
+        >>> wall_114 = Wall(ruleset, 114) # Fixed wall 
+        >>> wall_special = Wall(tiles = wall_114.get_tiles()) # Wall from another wall
+        ```
+        '''
+        assert isinstance(ruleset, Ruleset), "Invalid ruleset, expected `Ruleset` object."
+        self.ruleset = ruleset
+        if tiles is None:
+            # Set random seed
+            random_seed = random_seed if random_seed is not None else int(time.time())
+            random.seed(random_seed)
+            self.random_seed = random_seed
+            # Parse ruleset to get a valid tile set
+            red_dora = int(ruleset.get_rule("redDora"))
+            player_count = int(ruleset.get_rule("players"))
+            if red_dora == 0 and player_count == 4:
+                tiles = [ 
+                    11, 12, 13, 14, 15, 16, 17, 18, 19,
+                    21, 22, 23, 24, 25, 26, 27, 28, 29,
+                    31, 32, 33, 34, 35, 36, 37, 38, 39,
+                    41, 42, 43, 44, 45, 46, 47,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19,
+                    21, 22, 23, 24, 25, 26, 27, 28, 29,
+                    31, 32, 33, 34, 35, 36, 37, 38, 39,
+                    41, 42, 43, 44, 45, 46, 47,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19,
+                    21, 22, 23, 24, 25, 26, 27, 28, 29,
+                    31, 32, 33, 34, 35, 36, 37, 38, 39,
+                    41, 42, 43, 44, 45, 46, 47,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19,
+                    21, 22, 23, 24, 25, 26, 27, 28, 29,
+                    31, 32, 33, 34, 35, 36, 37, 38, 39,
+                    41, 42, 43, 44, 45, 46, 47
+                ]
+            elif red_dora == 3 and player_count == 4:
+                tiles = [ 
+                    11, 12, 13, 14, (51), 16, 17, 18, 19,
+                    21, 22, 23, 24, (52), 26, 27, 28, 29,
+                    31, 32, 33, 34, (53), 36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47,
+                    11, 12, 13, 14, 15,   16, 17, 18, 19,
+                    21, 22, 23, 24, 25,   26, 27, 28, 29,
+                    31, 32, 33, 34, 35,   36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47,
+                    11, 12, 13, 14, 15,   16, 17, 18, 19,
+                    21, 22, 23, 24, 25,   26, 27, 28, 29,
+                    31, 32, 33, 34, 35,   36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47,
+                    11, 12, 13, 14, 15,   16, 17, 18, 19,
+                    21, 22, 23, 24, 25,   26, 27, 28, 29,
+                    31, 32, 33, 34, 35,   36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47
+                ]
+            elif red_dora == 4 and player_count == 4:
+                tiles = [ 
+                    11, 12, 13, 14, (51), 16, 17, 18, 19,
+                    21, 22, 23, 24, (52), 26, 27, 28, 29,
+                    31, 32, 33, 34, (53), 36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47,
+                    11, 12, 13, 14, 15,   16, 17, 18, 19,
+                    21, 22, 23, 24, (52), 26, 27, 28, 29,
+                    31, 32, 33, 34, 35,   36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47,
+                    11, 12, 13, 14, 15,   16, 17, 18, 19,
+                    21, 22, 23, 24, 25,   26, 27, 28, 29,
+                    31, 32, 33, 34, 35,   36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47,
+                    11, 12, 13, 14, 15,   16, 17, 18, 19,
+                    21, 22, 23, 24, 25,   26, 27, 28, 29,
+                    31, 32, 33, 34, 35,   36, 37, 38, 39,
+                    41, 42, 43, 44, 45,   46, 47
+                ]
+            elif player_count == 3:
+                raise NotImplementedError("3-player wall generation is not implemented yet.")
+            else:
+                raise Exception("Invalid redDora count: {}".format(ruleset.get_rule("redDora")))
+            # Shuffle
+            random.shuffle(tiles)
+            # Create wall
+            self.tiles = self.parse_list(tiles)
+            self.game_split()
+        else:
+            self.tiles = self.parse_list(tiles)
+            self.game_split()
+        
+    def game_split(self):
+        '''
+        Method: game_split(self)
+
+        ## Description
+
+        Split the wall into a separate list of tiles. This method should be
+        called before the game starts. This method will take the `tiles` and
+        split them into starting hands.
+
+        ## Details
+
+        - Tile 0~13, 14~27, 28~41, (42~55 if 4-player mode) are the starting
+        hands for player 1, 2, 3 (and 4 if 4-player mode).
+
+        - Tile -5 ~ 0 are the dora indicators.
+        
+        - Tile -10 ~ -5 are the ura dora indicators.
+
+        - Tile -14, -13, -12, -11 are replacement tiles.
+        '''
+        # Get hand
+        self.starting_hands = []
+        player_count = self.ruleset.get_rule("players")
+        for i in range(player_count):
+            self.starting_hands.append(
+                Deck(self.tiles[i*13:(i+1)*13])
+            )
+        # Get dora
+        self.dora_indicators = Deck(self.tiles[-5:])
+        # Get ura dora
+        self.ura_dora_indicators = Deck(self.tiles[-10:-5])
+        # Get replacement tiles
+        self.replacements = Deck(self.tiles[-14:-10])
+        # Leave the rest of the tiles to the wall
+        self.mountain = Deck(self.tiles[(player_count*13):-14])
+
+    def get_starting_hands(self):
+        '''
+        Method: get_starting_hands(self)
+
+        ## Description
+
+        Returns the list of starting hands. The returned array will be
+        `[player1, player2, player3, player4]` if in 4-player mode, or
+        `[player1, player2, player3]` if in 3-player mode.
+        '''
+        return self.starting_hands
+
+    def get_starting_hand(self, player: int):
+        '''
+        Method: get_starting_hand(self, player)
+
+        ## Description
+
+        Returns the starting hand for the specific player.
+        '''
+        assert isinstance(player, int)
+        assert player in range(0, self.ruleset.get_rule("players")), "Invalid player ID, must be between 0 and {}".format(-1 + self.ruleset.get_rule("players"))
+        return self.starting_hands[player]
+
+    def get_dora_indicators(self):
+        '''
+        Method: get_dora_indicators(self)
+
+        ## Description
+
+        Returns the list of dora indicators.
+        '''
+        return self.dora_indicators
+
+    def get_ura_dora_indicators(self):
+        '''
+        Method: get_ura_dora_indicators(self)
+
+        ## Description
+
+        Returns the list of ura dora indicators.
+        '''
+        return self.ura_dora_indicators
+
+    def get_replacements(self):
+        '''
+        Method: get_replacements(self)
+
+        ## Description
+
+        Returns the list of replacement tiles.
+        '''
+        return self.replacements
+    
+    def get_mountain(self):
+        '''
+        Method: get_mountain(self)
+
+        ## Description
+
+        Returns the mountain.
+        '''
+        return self.mountain

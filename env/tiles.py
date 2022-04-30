@@ -8,6 +8,11 @@ Description:
 
 import random
 
+man_tiles = ["🀇", "🀈", "🀉", "🀊", "🀋", "🀌", "🀍", "🀎", "🀏"]
+pin_tiles = ["🀙", "🀚", "🀛", "🀜", "🀝", "🀞", "🀟", "🀠", "🀡"]
+sou_tiles = ["🀐", "🀑", "🀒", "🀓", "🀔", "🀕", "🀖", "🀗", "🀘"]
+char_tiles = ["🀀", "🀁", "🀂", "🀃", "🀆", "🀅", "🀄"]
+
 class Tile:
     '''
     Class: Tile
@@ -124,7 +129,6 @@ class Tile:
                 return 52
             elif str_id[1] == "s":
                 return 53
-
         if str_id[1] == 'm':
             return int(str_id[0]) + 10
         elif str_id[1] == 'p':
@@ -148,7 +152,7 @@ class Tile:
         '''
         if self.id == 0:
             return ""
-        elif self.id < 10:
+        elif self.id <= 10:
             return "(invalid)"
         elif self.id < 20:
             return str(self.id - 10) + "m"
@@ -179,7 +183,7 @@ class Tile:
 
         - `id`: ID of the tile
         '''
-        assert isinstance(id, int), "id must be an integer"
+        assert isinstance(id, int), "Tile id must be an integer"
         if id in self.valid_id:
             self.id = id
         else:
@@ -221,7 +225,11 @@ class Tile:
 
         ## Description
 
-        Returns the suit of the tile.
+        Returns the suit of the tile. If the tile is invalid, returns an
+        empty string. Otherwise, returns "m", "p", "s" or "z".
+
+        Note that there will be no special treatment for red dora. Use
+        `tile.is_red_dora()` instead.
 
         ## Returns
 
@@ -229,14 +237,18 @@ class Tile:
         '''
         if self.id == 0:
             return ""
-        if self.id < 10 or self.id == 51:
+        elif self.id <= 10:
+            return ""
+        if self.id < 20 or self.id == 51:
             return "m"
-        elif self.id < 20 or self.id == 52:
+        elif self.id < 30 or self.id == 52:
             return "p"
-        elif self.id < 30 or self.id == 53:
+        elif self.id < 40 or self.id == 53:
             return "s"
-        elif self.id < 40:
+        elif self.id < 50:
             return "z"
+        else:
+            return ""
 
     def get_name(self) -> str:
         '''
@@ -244,7 +256,8 @@ class Tile:
 
         ## Description
 
-        Returns the name of the tile.
+        Returns the name of the tile. Name is a string of the rank and suit,
+        e.g. "1m", "2p", "0s", "2z".
 
         ## Returns
 
@@ -252,6 +265,53 @@ class Tile:
         '''
         return self.__id_to_str()
     
+    def get_unicode_tile(self) -> str:
+        '''
+        Method: get_unicode_tile
+
+        ## Description
+
+        Returns the unicode representation of the tile.
+
+        ## Returns
+
+        - `str`: unicode representation of the tile
+        '''
+        if self.id == 0:
+            return ""
+        elif self.id < 10:
+            return "(invalid)"
+        elif self.id < 20:
+            return man_tiles[self.id - 11]
+        elif self.id < 30:
+            return pin_tiles[self.id - 21]
+        elif self.id < 40:
+            return sou_tiles[self.id - 31]
+        elif self.id < 50:
+            return char_tiles[self.id - 41]
+        elif self.id == 51:
+            return man_tiles[4]
+        elif self.id == 52:
+            return pin_tiles[4]
+        elif self.id == 53:
+            return sou_tiles[4]
+        else:
+            return "(invalid)"
+
+    def is_red_dora(self) -> bool:
+        '''
+        Method: is_red_dora
+
+        ## Description
+
+        Returns whether the tile is red dora.
+
+        ## Returns
+
+        - `bool`: whether the tile is red dora
+        '''
+        return self.id in [51, 52, 53]
+
     def copy(self):
         '''
         Method: copy
@@ -324,6 +384,7 @@ class Tile:
         '''
         if not isinstance(other, Tile):
             raise TypeError("Cannot compare tile with non-tile object")
+        
         return self.id < other.id
     
     def __gt__(self, other):

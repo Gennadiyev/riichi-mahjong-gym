@@ -1,8 +1,9 @@
 {
   "name": "Standard Maj-soul",
   "rules": {
+    "players": 4,
     "enableKuitan": true,
-    "enableAtozuke": true,
+    "enableAtozuke": false,
     "enableMultiRon": true,
     "enableIppatsu": true,
     "enableNoTenPenalty": true,
