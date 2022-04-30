@@ -143,6 +143,121 @@ class Action:
         '''
         self.action_type = action_type
         self.action_string = action_string
+    
+    def KAN(self, pon_string: str):
+        '''
+        Method: KAN
+        
+        ## Description
+        
+        This function returns a `KAN` action from the given
+        pon string.
+        
+        ## Parameters
+        
+        - `pon_string`: `str`
+            The string representation of the pon.
+
+        ## Returns
+
+        A `kan` action.
+        '''
+        pon_string.replace("p", "k")
+        kan_string = pon_string + pon_string[-2:]
+        return Action("kan", kan_string)
+
+    def AKAN(self, tile_id: int):
+        '''
+        Method: AKAN
+        
+        ## Description
+        
+        This function returns an `AKAN` action from the given
+        akan string.
+        
+        ## Parameters
+        
+        - `tile_id`: `int`
+            The id of the tile.
+
+        ## Returns
+
+        An `akan` action.
+        '''
+        akan_string = str(id) * 3 + "a" + str(id)
+        return Action("akan", akan_string)
+
+    def DISCARD(self):
+        '''
+        Method: DISCARD
+        
+        ## Description
+        
+        This function returns a `DISCARD` action.
+        
+        ## Returns
+
+        A `discard` action.
+        '''
+        return Action("discard", "")
+    
+    def REPLACE(self, tile_id: int):
+        '''
+        Method: REPLACE
+        
+        ## Description
+        
+        This function returns a `REPLACE` action from the given
+        tile id.
+        
+        ## Parameters
+        
+        - `tile_id`: `int`
+            The id of the tile.
+
+        ## Returns
+
+        A `replace` action.
+        '''
+        return Action("replace", str(tile_id))
+
+    def REACH(self, tile_id: int):
+        '''
+        Method: REACH
+        
+        ## Description
+        
+        This function returns a `REACH` action from the given
+        tile id.
+        
+        ## Parameters
+        
+        - `tile_id`: `int`
+            The id of the tile. If `tile_id` is `0` or `60`,
+            the action means that the player calls reach upon
+            discard
+
+        ## Returns
+
+        A `reach` action.
+        '''
+        if tile_id == 0:
+            tile_id = 60
+        return Action("reach", "r"+str(tile_id))
+
+    def TSUMO(self):
+        '''
+        Method: TSUMO
+        
+        ## Description
+        
+        This function returns a `TSUMO` action.
+        
+        ## Returns
+
+        A `tsumo` action.
+        '''
+        return Action("tsumo", "")
 
     def __str__(self):
         return self.action_string

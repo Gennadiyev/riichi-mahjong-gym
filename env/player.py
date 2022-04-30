@@ -10,6 +10,7 @@ from env.deck import Deck
 from env.tiles import Tile
 from env.action import Action
 from env.agent import Agent
+from env.utils import check_reach, check_agari
 
 class Player():
     '''
@@ -138,9 +139,7 @@ class Player():
             The action space of the agent. See `actions.md` documentation
             for more information.
         '''
-        # Get observation
-        observation = obs["observation"]
-        
+  
         # Prepare action space
         action_space = []
         
@@ -149,5 +148,53 @@ class Player():
             # Merge the incoming tile to the current hand
             hand = self.hand.get_tiles().copy()
             hand.append(self.incoming_tile)
-            # Player with incoming tile can call: kan, akan, discard, replace, reach tsumo 
+            calls = self.calls
+            hand.sort()
+            # Player with incoming tile can call: kan, akan, discard, replace, reach, tsumo
+
+            # Check for kan
+            for call in calls:
+                if call.find("p"):
+                    # Pon found, check for kan
+                    tile_id = int(call[-2:])
+                    if Tile(tile_id) in hand:
+                        action_space.append(Action.KAN(call))
+            
+            # Check for akan
+            same_tile = 0
+            previous_tile = Tile()
+            for tile in hand:
+                if tile == previous_tile:
+                    same_tile += 1
+                else:
+                    same_tile = 0
+                if same_tile == 4:
+                    action_space.append(Action.AKAN(tile.get_id()))
+                previous_tile = tile
+
+            # Default: allow discard
+            action_space.append(Action.DISCARD())
+
+            # Default: allow replace
+            for tile in hand:
+                action_space.append(Action.REPLACE(tile.get_id()))
+
+            # Check for reach
+            if obs["player_credit"][obs["player"]] >= 1000:
+                reach_discard = check_reach(hand, calls)
+                if reach_discard:
+                    for reach_discard_tile in reach_discard:
+                        # Check whether the tile is incoming
+                        if reach_discard_tile == self.incoming_tile:
+                            action_space.append(Action.REACH(0))
+                            # If also in hand, allow another reach action
+                            if reach_discard_tile in self.hand.get_tiles():
+                                action_space.append(Action.REACH(reach_discard_tile.get_id()))
+                        else:
+                            action_space.append(Action.REACH(reach_discard_tile.get_id()))
+            
+            # Check for tsumo
+            if check_agari(hand):
+                action_space.append(Action.TSUMO())
+            
 

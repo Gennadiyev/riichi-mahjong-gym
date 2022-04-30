@@ -21,8 +21,9 @@ class Deck:
     A class that represents a deck of tiles.
     '''
     tiles = []
+    sort_always = None
 
-    def __init__(self, tiles: list or str or None = None):
+    def __init__(self, tiles: list or str or None = None, sort=False):
         '''
         Constructor: __init__
 
@@ -33,9 +34,12 @@ class Deck:
 
         ## Parameters
 
-        - `tiles`: `list` or `str` or `None`
+        - `tiles`: `list` or `str` or `Deck` or `None`
             A list of tiles or a string that represents a list of tiles. If no
             tiles are given, an empty deck is created.
+        - `sort`: `bool`
+            Whether to sort the deck. This state is stored so that the deck
+            will always be sorted if `sort` is set to `True`.
 
         ## Details
 
@@ -65,14 +69,20 @@ class Deck:
         >>> deck = Deck("19m19p19s12345677z")
         ```
         '''
+        self.sort_always = sort
         if tiles is None:
             self.tiles = []
         elif isinstance(tiles, str):
             self.tiles = self.parse_string(tiles)
         elif isinstance(tiles, list):
             self.tiles = self.parse_list(tiles)
+        elif isinstance(tiles, Deck):
+            self.tiles = tiles.tiles
+            self.sort_always = tiles.sort_always
         else:
             raise TypeError("Invalid input type for deck creation, expected str or list, got " + str(type(tiles)))
+        if sort:
+            self.sort()
     
     def parse_string(self, string: str):
         '''
@@ -100,7 +110,8 @@ class Deck:
                     tiles.append(Tile(rank + suit))
             elif string[i] in "mpsz":
                 suit = string[i]
-        tiles.sort()
+        # reverse the list so that the last tile in the string is the last tile in the list
+        tiles.reverse()
         return tiles
     
     def __sort_util(self, tile: Tile) -> float:
@@ -127,6 +138,7 @@ class Deck:
         if tile.is_red_dora():
             id = tile.get_id()
             return 14.5 if id == 51 else 24.5 if id == 52 else 34.5
+        return tile.get_id()
 
     def sort(self):
         '''
@@ -136,7 +148,7 @@ class Deck:
     
         Sorts the deck in ascending order.
         '''
-        self.tiles.sort(lambda tile: self.__sort_util(tile))
+        self.tiles.sort(key=self.__sort_util)
     
     def parse_list(self, tile_list: list):
         '''
@@ -226,7 +238,64 @@ class Deck:
 
         A `Tile` object.
         '''
-        return self.tiles.pop()
+        if self.sort_always:
+            tile = self.tiles.pop()
+            self.sort()
+            return tile
+        else:
+            return self.tiles.pop()
+
+    def push(self, tile: Tile):
+        '''
+        Method: push()
+    
+        ## Description
+    
+        Adds a tile to the end of the deck.
+    
+        ## Parameters
+
+        - `tile`: `Tile`
+            A tile to be added.
+        '''
+        self.tiles.append(tile)
+        if self.sort_always:
+            self.sort()
+    
+    def add_tile(self, tile: Tile):
+        '''
+        Method: add_tile()
+    
+        ## Description
+    
+        Adds a tile to the end of the deck.
+    
+        ## Parameters
+
+        - `tile`: `Tile`
+            A tile to be added.
+        '''
+        self.push(tile)
+    
+    def remove_tile(self, tile: Tile):
+        '''
+        Method: remove_tile()
+    
+        ## Description
+    
+        Removes a tile from the deck.
+    
+        ## Parameters
+
+        - `tile`: `Tile`
+            A tile to be removed.
+        '''
+        try:
+            self.tiles.remove(tile)
+        except ValueError:
+            raise ValueError("Tile {} not found in deck {}".format(tile, self))
+        if self.sort_always:
+            self.sort()
 
     def __str__(self):
         return "".join([str(tile) for tile in self.tiles])
@@ -251,6 +320,45 @@ class Deck:
     
     def __contains__(self, item):
         return item in self.tiles
+    
+    def __add__(self, other):
+        if isinstance(other, Deck):
+            return Deck(self.tiles + other.tiles, sort=self.sort_always)
+        elif isinstance(other, Tile):
+            return Deck(self.tiles + [other], sort=self.sort_always)
+        else:
+            raise TypeError("Deck can only be added to Deck or Tile")
+
+    def __sub__(self, other):
+        if isinstance(other, Deck):
+            tiles = self.tiles.copy()
+            for tile in other.tiles:
+                try:
+                    tiles.remove(tile)
+                except:
+                    pass
+            return Deck(tiles, sort=self.sort_always)
+        elif isinstance(other, Tile):
+            if other in self.tiles:
+                tiles = self.tiles.copy()
+                tiles.remove(other)
+                return Deck(tiles, sort=self.sort_always)
+            else:
+                raise ValueError("Tile {} not found in deck {}".format(other, self))
+        else:
+            raise TypeError("Deck can only be subtracted from Deck or Tile")
+    
+    def __eq__(self, other):
+        assert isinstance(other, Deck)
+        if len(self.tiles) != len(other.tiles):
+            return False
+        this = self.tiles.copy()
+        that = other.tiles.copy()
+        for tile in this:
+            if tile not in that:
+                return False
+            that.remove(tile)
+        return True
 
 class Wall(Deck):
     '''

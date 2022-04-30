@@ -155,7 +155,7 @@ class MahjongGame():
         obs["dora_indicators"] = self.wall.dora_indicators[0:self.state["dora_revealed"]]
         # An player can see the discarded tiles from all players
         obs["discarded_tiles"] = self.state["discarded_tiles"]
-        # An player can see the player
+        # An player can see which player is active
         obs["player"] = player
         # An player can see the wind
         obs["wind"] = self.state["wind"]
