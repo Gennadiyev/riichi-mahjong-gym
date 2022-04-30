@@ -74,7 +74,7 @@ opposing player.
 
 Discard (discard, 捨てる). Discards the incoming tile.
 
-*(no action string)*
+(no action string)
 
 ### `replace`
 
@@ -82,16 +82,16 @@ Cut (切る).
 
 The action string should be the tile that is discarded.
 
-E.g. `"1z"` (cut 1z from hand)
+E.g. `"41"` (cut 1z from hand)
 
 ### `reach`
 
 Call reach (riichi, 立直).
 
-This action does not require an action string. It means
-to call reach.
+The action string should be the tile that is discarded.
+This action also calls reach.
 
-*(no action string)*
+E.g. `"r51"` (riichi with 0m), `"r60"` (richii with discard)
 
 ### `ron`
 
