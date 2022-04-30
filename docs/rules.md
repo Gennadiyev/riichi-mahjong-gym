@@ -6,8 +6,9 @@ Riichi Mahjong has a wide range of rule variations. This project supports a few,
 
 | Variable | Variable Alias | Term | Values | Note |
 | --- | --- | --- | --- | --- |
-| `enableKuitan` | `食断` / `喰い断` | [Kuitan](https://riichi.wiki/Tanyao#Kuitan) | `true` / `false` |  |
-| `enableAtozuke` | `后付` / `後付け` | [Atozuke](https://riichi.wiki/Atozuke) | `true` / `false` |  |
+| `players` | - | - | `3` / `4` | 3-player mahjong is not supported at present. | 
+| `enableKuitan` | `食断` / `喰い断` | [Kuitan](https://riichi.wiki/Tanyao#Kuitan) | `true` / `false` | Allow open-hand tanyao |
+| `enableAtozuke` | `后付` / `後付け` | [Atozuke](https://riichi.wiki/Atozuke) | `true` / `false` | Allow gaining yaku upon winning tile |
 | `enableMultiRon` | `无截和` / `複数和了` | [Multiple ron](https://riichi.wiki/Multiple_ron) | `true` / `false` | Includes double-ron and triple-ron. |
 | `enableIppatsu` | `一发` / `一発` | [Riichi Ippatsu](https://riichi.wiki/Ippatsu) | `true` / `false` | 
 | `enableNoTenPenalty` | `未听罚符` / `ノーテン罰符` | [Noten Bappu](https://riichi.wiki/Bappu) | `true` / `false` |
