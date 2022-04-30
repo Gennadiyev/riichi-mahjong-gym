@@ -112,7 +112,7 @@ class Player():
         
         ## Parameters
         
-        - `tile`: `Tile`
+        `tile`: `Tile`
             The tile that is drawn.
         '''
         assert isinstance(tile, Tile)
@@ -131,6 +131,12 @@ class Player():
         
         - `obs`: `dict`
             The observation of the game.
+
+        ## Returns
+
+        `list` of `Action`
+            The action space of the agent. See `actions.md` documentation
+            for more information.
         '''
         # Get observation
         observation = obs["observation"]
@@ -143,4 +149,5 @@ class Player():
             # Merge the incoming tile to the current hand
             hand = self.hand.get_tiles().copy()
             hand.append(self.incoming_tile)
-            
+            # Player with incoming tile can call: kan, akan, discard, replace, reach tsumo 
+
