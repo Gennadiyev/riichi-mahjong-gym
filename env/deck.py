@@ -289,6 +289,11 @@ class Deck:
 
         - `tile`: `Tile`
             A tile to be removed.
+
+        ## Raises
+
+        - `ValueError`:
+            If the tile is not in the deck.
         '''
         try:
             self.tiles.remove(tile)

@@ -8,9 +8,7 @@ Description:
 
 class Action:
 
-    from env.mahjong import MahjongGame
-
-    def __init__(self, action_type: str, action_string: str):
+    def __init__(self, action_type: str, action_string: str = ""):
         '''
         Constructor: __init__
         
@@ -144,7 +142,29 @@ class Action:
         self.action_type = action_type
         self.action_string = action_string
     
-    def KAN(self, pon_string: str):
+    def CHII(chii_string: str):
+        '''
+        Method: CHII
+        
+        ## Description
+        
+        This function returns a `CHII` action from the given
+        tile id and chii string.
+        
+        ## Parameters
+        
+        - `tile_id`: `int`
+            The id of the tile.
+        - `chii_string`: `str`
+            The string representation of the action.
+
+        ## Returns
+
+        A `chii` action.
+        '''
+        return Action("chii", chii_string)
+
+    def KAN(pon_or_kan_string: str):
         '''
         Method: KAN
         
@@ -155,18 +175,24 @@ class Action:
         
         ## Parameters
         
-        - `pon_string`: `str`
-            The string representation of the pon.
+        - `pon_or_kan_string`: `str`
+            The string representation of the pon / the string
+            representation of the kan.
 
         ## Returns
 
         A `kan` action.
         '''
-        pon_string.replace("p", "k")
-        kan_string = pon_string + pon_string[-2:]
+        if pon_or_kan_string.find("p") != -1:
+            pon_or_kan_string.replace("p", "k")
+            kan_string = pon_or_kan_string + pon_or_kan_string[-2:]
+        elif pon_or_kan_string.find("k") != -1:
+            kan_string = pon_or_kan_string
+        else:
+            raise ValueError("Invalid kan string: {}".format(pon_or_kan_string))
         return Action("kan", kan_string)
 
-    def AKAN(self, tile_id: int):
+    def AKAN(tile_id: int or str):
         '''
         Method: AKAN
         
@@ -177,17 +203,17 @@ class Action:
         
         ## Parameters
         
-        - `tile_id`: `int`
-            The id of the tile.
+        - `tile_id`: `int` / `str`
+            The id of the tile. Not `"4s"` string!
 
         ## Returns
 
         An `akan` action.
         '''
-        akan_string = str(id) * 3 + "a" + str(id)
+        akan_string = str(tile_id) * 3 + "a" + str(tile_id)
         return Action("akan", akan_string)
 
-    def DISCARD(self):
+    def DISCARD():
         '''
         Method: DISCARD
         
@@ -201,7 +227,7 @@ class Action:
         '''
         return Action("discard", "")
     
-    def REPLACE(self, tile_id: int):
+    def REPLACE(tile_id: int):
         '''
         Method: REPLACE
         
@@ -221,7 +247,7 @@ class Action:
         '''
         return Action("replace", str(tile_id))
 
-    def REACH(self, tile_id: int):
+    def REACH(tile_id: int):
         '''
         Method: REACH
         
@@ -245,7 +271,7 @@ class Action:
             tile_id = 60
         return Action("reach", "r"+str(tile_id))
 
-    def TSUMO(self):
+    def TSUMO():
         '''
         Method: TSUMO
         
@@ -259,8 +285,50 @@ class Action:
         '''
         return Action("tsumo", "")
 
+    def NOOP():
+        '''
+        Method: NOOP
+        
+        ## Description
+        
+        This function returns a `NOOP` action.
+        
+        ## Returns
+
+        A `noop` action.
+        '''
+        return Action("noop", "")
+    
+    def TEN():
+        '''
+        Method: TEN
+        
+        ## Description
+        
+        This function returns a `TEN` action.
+        
+        ## Returns
+
+        A `ten` action.
+        '''
+        return Action("ten", "")
+    
+    def NOTEN():
+        '''
+        Method: NOTEN
+        
+        ## Description
+        
+        This function returns a `NOTEN` action.
+        
+        ## Returns
+
+        A `noten` action.
+        '''
+        return Action("noten", "")
+    
     def __str__(self):
-        return self.action_string
+        return str(self.action_type) + " " + str(self.action_string)
     
     def __repr__(self):
         return "Action({}, {})".format(self.action_type, self.action_string)

@@ -8,7 +8,7 @@ sys.path.insert(0, parent)
 
 from env.deck import Deck
 from env.tiles import Tile
-from env.utils import check_agari, check_reach
+from env.utils import check_agari, check_reach, check_tenpai
 
 # Agari test
 
@@ -47,13 +47,13 @@ def test_agari():
 # Riichi test
 
 def test_riichi():
-    riichi_deck = Deck("5556p56777s456m4s7m")
+    riichi_deck = Deck("5056p06777s456m4s7m")
     assert check_reach(riichi_deck)
     riichi_deck_2 = Deck("19m19p19s1234567z4m")
     assert check_reach(riichi_deck_2)
-    riichi_deck_3 = Deck("19m19p19s12345677z")
+    riichi_deck_3 = Deck("19m19p19s12345667z")
     assert len(check_reach(riichi_deck_3)) == 14
-    riichi_deck_4 = Deck("4455m1166p255669s")
+    riichi_deck_4 = Deck("4455m1166p205669s")
     assert Tile("9s") in Deck(check_reach(riichi_deck_4))
 
 def test_no_riichi():
@@ -61,7 +61,24 @@ def test_no_riichi():
     assert not check_reach(no_riichi_deck)
     no_riichi_deck_2 = Deck("123s456p788m11z")
     assert not check_reach(no_riichi_deck_2, ["33p3333"])
+    no_riichi_deck_3 = Deck("19m19p19s12345667z")
 
 def test_riichi_with_ankan():
     riichi_deck = Deck("123s456p788m11z")
     assert Tile("7m") in check_reach(riichi_deck, ["333333a33"])
+    riichi_deck_1 = Deck("123s456p259m11z")
+    assert not check_reach(riichi_deck_1, ["333333a33"])
+
+# Tenpai
+
+def test_tenpai():
+    no_tenpai_deck = Deck("123s456p777m1123z")
+    assert not check_tenpai(no_tenpai_deck)
+    tenpai_deck = Deck("1112345678999m")
+    assert check_tenpai(tenpai_deck)
+    tenpai_deck_2 = Deck("223344m667788p6z")
+    assert check_tenpai(tenpai_deck_2)
+    tenpai_deck_3 = Deck("88m23344556s111z")
+    assert check_tenpai(tenpai_deck_3)
+
+test_riichi_with_ankan()

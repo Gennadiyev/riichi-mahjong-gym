@@ -8,7 +8,7 @@ Description:
 from numpy import isin
 
 
-def han_calculator(deck) -> int:
+def han_count(deck, calls: list = []) -> int:
     '''
     Function: han_calculator(deck: `list`) -> `int`
  
@@ -20,13 +20,15 @@ def han_calculator(deck) -> int:
     
     - `deck`: `Deck`
         The target deck.
- 
+    - `call`: `list`
+        The call list.
+
     ## Returns
     
     `int`
         The number of han of the given deck.
     '''
-    pass
+    return 1
 
 def check_reach(deck, calls: list = []) -> bool or list:
     '''
@@ -63,7 +65,10 @@ def check_reach(deck, calls: list = []) -> bool or list:
         assert isinstance(deck, list)
         assert all(isinstance(tile, Tile) for tile in deck)
         deck_list = deck
-
+    
+    # Consider red dora as non-red ones
+    deck_list = [Tile((tile.get_id() - 50) * 10 + 5) if tile.is_red_dora() else tile for tile in deck_list]
+    
     if len(calls) != 0 and not all(call.find("a") != -1 for call in calls):
         return False
     else:
@@ -71,8 +76,7 @@ def check_reach(deck, calls: list = []) -> bool or list:
         all_valid_tile_id = [11, 12, 13, 14, 15, 16, 17, 18, 19,
             21, 22, 23, 24 ,25, 26, 27, 28, 29,
             31, 32, 33, 34, 35, 36, 37, 38, 39,
-            41, 42, 43, 44, 45, 46, 47, 48, 49,
-            51, 52, 53
+            41, 42, 43, 44, 45, 46, 47, 48, 49
         ]
         all_tiles = [Tile(i) for i in all_valid_tile_id]
         for tile in deck_list:
@@ -86,6 +90,51 @@ def check_reach(deck, calls: list = []) -> bool or list:
             return False
         else:
             return reach_discard
+
+def check_tenpai(deck, calls: list = []) -> bool:
+    '''
+    Function: check_tenpai(deck: `list`) -> `bool`
+ 
+    ## Description
+
+    Checks whether a given deck is in tenpai state.
+ 
+    ## Parameters
+    
+    - `deck`: `Deck`
+        The target deck.
+    - `call`: `list`
+        The call list.
+ 
+    ## Returns
+    
+    `bool`
+        `True` if the deck is tenpai, `False` otherwise.
+    '''
+    from env.deck import Deck
+    from env.tiles import Tile
+    
+    assert isinstance(calls, list)
+    
+    if isinstance(deck, Deck):
+        deck_list = deck.get_tiles()
+    else:
+        assert isinstance(deck, list)
+        assert all(isinstance(tile, Tile) for tile in deck)
+        deck_list = deck
+
+    all_valid_tile_id = [11, 12, 13, 14, 15, 16, 17, 18, 19,
+        21, 22, 23, 24 ,25, 26, 27, 28, 29,
+        31, 32, 33, 34, 35, 36, 37, 38, 39,
+        41, 42, 43, 44, 45, 46, 47, 48, 49
+    ]
+    all_tiles = [Tile(i) for i in all_valid_tile_id]
+    for tile in deck_list:
+        deck_addition = Deck(deck_list.copy()) + tile
+        if check_agari(deck_addition.get_tiles(), calls):
+            return True
+    return False
+
 
 def check_agari(deck, calls: list = []) -> bool:
     '''
@@ -120,7 +169,11 @@ def check_agari(deck, calls: list = []) -> bool:
 
     # Sort tile list
     deck_list.sort()
-    
+    # Consider red dora as non-red ones
+    deck_list = [Tile((tile.get_id() - 50) * 10 + 5) if tile.is_red_dora() else tile for tile in deck_list]
+
+    deck = Deck(deck_list)
+
     # Ordinary hand
     toitsu = []
     for tile in deck_list:
