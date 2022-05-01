@@ -1,0 +1,14 @@
+{
+  "name": "Standard Maj-soul",
+  "rules": {
+    "players": 4,
+    "enableKuitan": true,
+    "enableAtozuke": false,
+    "enableMultiRon": true,
+    "enableIppatsu": true,
+    "enableNoTenPenalty": true,
+    "enableBust": true,
+    "minYaku": "0",
+    "redDora": 3
+  }
+}
