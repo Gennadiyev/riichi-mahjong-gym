@@ -1,0 +1,21 @@
+You: P0 / Current: P0
+
+Observation:
+Your Hand: 🀊🀎🀟🀡🀡🀑🀕🀕🀂🀃🀃🀅🀄 + 🀠
+Dora Indicators: 🀠
+
+Action space:
+00: discard 
+01: replace 🀊
+02: replace 🀎
+03: replace 🀟
+04: replace 🀡
+05: replace 🀡
+06: replace 🀑
+07: replace 🀕
+08: replace 🀕
+09: replace 🀂
+10: replace 🀃
+11: replace 🀃
+12: replace 🀅
+13: replace 🀄

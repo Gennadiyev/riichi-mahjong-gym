@@ -105,7 +105,7 @@ class MahjongGame():
             if i != player_idx:
                 self.players[i].act(self.get_observation(i, {
             "player_state": "passive",
-            "incoming_tile": tile
+            "incoming_tile": discarded_tile
         }))
         # Update game state
         self.state["player_idx"] = (player_idx + 1) % len(self.players)
@@ -124,22 +124,24 @@ class MahjongGame():
         # Get player
         player = self.players[player]
         # Perform action
-        if action == "kan":
+        print(action)
+        if action.action_type == "kan":
             pass
-        elif action == "mkan":
+        elif action.action_type == "mkan":
             pass
-        elif action == "chi":
+        elif action.action_type == "chi":
             pass
-        elif action == "pon":
+        elif action.action_type == "pon":
             pass
-        elif action == "tsumo":
+        elif action.action_type == "tsumo":
             pass
-        elif action == "reach":
+        elif action.action_type == "reach":
             pass
-        elif action == "ron":
+        elif action.action_type == "ron":
             pass
-        elif action == "discard":
-            pass
+        elif action.action_type == "discard":
+            tile = obs["incoming_tile"]
+            return tile
         elif action.action_type == "replace":
             # Get the tile to cut
             tile_id = action.action_string
@@ -150,9 +152,9 @@ class MahjongGame():
                 raise ValueError("Player {} does not have the tile {}.".format(obs["player_idx"], tile))
             self.hands[obs["player_idx"]].add_tile(obs["incoming_tile"])
             return tile
-        elif action == "ten":
+        elif action.action_type == "ten":
             pass
-        elif action == "noten":
+        elif action.action_type == "noten":
             pass
 
     def get_observation(self, player_idx: int, additional_dict: dict = []) -> dict:

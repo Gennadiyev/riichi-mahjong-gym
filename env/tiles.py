@@ -187,7 +187,7 @@ class Tile:
         if id in self.valid_id:
             self.id = id
         else:
-            raise ValueError("Invalid ID")
+            raise ValueError("Invalid ID {}".format(id))
 
     def get_id(self) -> int:
         '''

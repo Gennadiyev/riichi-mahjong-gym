@@ -327,8 +327,25 @@ class Action:
         '''
         return Action("noten", "")
     
+    def get_unicode_str(self):
+        from env.tiles import Tile
+        # Extract digits from action string
+        action_string = self.action_string
+        digits = [int(ch) for ch in action_string if ch.isdigit()]
+        for digit_idx in range(0, len(digits), 2):
+            id = digits[digit_idx] * 10 + digits[digit_idx+1]
+            if id == 0:
+                break
+            elif id == 60:
+                id = 0
+                break
+            else:
+                tile = Tile(id)
+                action_string = action_string.replace(str(id), tile.get_unicode_tile())
+        return str(self.action_type) + " " + action_string
+
     def __str__(self):
         return str(self.action_type) + " " + str(self.action_string)
     
     def __repr__(self):
-        return "Action({}, {})".format(self.action_type, self.action_string)
+        return "Action({}, '{}')".format(self.action_type, self.action_string)

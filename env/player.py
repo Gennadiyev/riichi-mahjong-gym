@@ -5,6 +5,7 @@ Description:
     This file contains a player, or agent, that can play the game of mahjong.
 '''
 
+import os
 from env import action
 from env.deck import Deck
 from env.tiles import Tile
@@ -85,7 +86,7 @@ def can_chii(tile_list, incoming_tile, obs):
     tile_list_red_dora_nullified = [Tile((tile.get_id() - 50) * 10 + 5) if tile.is_red_dora() else tile for tile in tile_list]
 
     if incoming_tile.get_suit() == "z":
-        return False
+        return None
     
     action_chii = []
     # cX1X2X3
@@ -241,10 +242,24 @@ class Player():
         - `action_space`: `list`
             All possible actions.
         '''
-        print("Observation:\n" + str(obs))
-        print("Action space:")
+        if len(action_space) == 1:
+            print("Skipping player P{}\n".format(obs["player_idx"]))
+            return action_space[0]
+        s = "You: P{} / Current: P{}\n\n".format(obs["player_idx"], obs["active_player"])
+        print("You: P{} / Current: P{}\n\n".format(obs["player_idx"], obs["active_player"]))
+        s += "Observation:\n"
+        s += "Your Hand: " + obs["hand"].get_unicode_str() + " + " + obs["incoming_tile"].get_unicode_tile() + "\n"
+        s += "Dora Indicators: " + Deck(obs["dora_indicators"]).get_unicode_str() + "\n\n"
+        
+        s += "Action space:\n"
         for i in range(len(action_space)):
-            print("{:2d}: {}".format(i, action_space[i]))
+            s += "{:02d}: {}\n".format(i, action_space[i].get_unicode_str())
+
+        # Save to file
+        with open("mahjong.hand.txt", "w", encoding="UTF-8") as f:
+            f.write(s)
+            print("Check the observation at " + os.path.abspath("mahjong.hand.txt"))
+        
         # Get action from stdin
         action_id = None
         while action_id is None or action_id < 0 or action_id >= len(action_space):
@@ -265,22 +280,6 @@ class Player():
         This method is called when the agent is initialized.
         '''
         pass
-
-    def set_hand(self, hand: Deck):
-        '''
-        Method: set_hand(hand)
-        
-        ## Description
-        
-        This method is called when the agent is supposed to set its hand.
-        
-        ## Parameters
-        
-        - `hand`: `Deck`
-            The hand of the player.
-        '''
-        assert isinstance(hand, Deck)
-        self.hand = hand
     
     def get_action_space(self, obs: dict) -> list:
         '''
@@ -310,6 +309,14 @@ class Player():
         calls = obs["calls"][player_idx]
         # Check if the player is active
         if obs["player_state"] == "active":
+
+            # Default: allow discard
+            action_space.append(Action.DISCARD())
+
+            # Default: allow replace
+            for tile in hand:
+                action_space.append(Action.REPLACE(tile.get_id()))
+
             # Merge the incoming tile to the current hand
             hand.append(obs["incoming_tile"])
             hand.sort()
@@ -335,23 +342,16 @@ class Player():
                     action_space.append(Action.AKAN(tile.get_id()))
                 previous_tile = tile
 
-            # Default: allow discard
-            action_space.append(Action.DISCARD())
-
-            # Default: allow replace
-            for tile in hand:
-                action_space.append(Action.REPLACE(tile.get_id()))
-
             # Check for reach
             if obs["player_credit"][player_idx] >= 1000:
                 reach_discard = check_reach(hand, calls)
                 if reach_discard:
                     for reach_discard_tile in reach_discard:
                         # Check whether the tile is incoming
-                        if reach_discard_tile == self.incoming_tile:
+                        if reach_discard_tile == obs["incoming_tile"]:
                             action_space.append(Action.REACH(0))
                             # If also in hand, allow another reach action
-                            if reach_discard_tile in self.hand.get_tiles():
+                            if reach_discard_tile in obs["hand"].get_tiles():
                                 action_space.append(Action.REACH(reach_discard_tile.get_id()))
                         else:
                             action_space.append(Action.REACH(reach_discard_tile.get_id()))
@@ -384,7 +384,8 @@ class Player():
 
             can_chii_ret = can_chii(hand, incoming_tile, obs)
             if can_chii_ret is not None:
-                action_space.append(Action.CHII(can_chii_ret))
+                action_space += can_chii_ret
+                # action_space.append(Action.CHII(can_chii_ret))
 
             # Check for pon
             # TODO

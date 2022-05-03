@@ -531,7 +531,7 @@ class Wall(Deck):
         player_count = self.ruleset.get_rule("players")
         for i in range(player_count):
             self.starting_hands.append(
-                Deck(self.tiles[i*13:(i+1)*13])
+                Deck(self.tiles[i*13:(i+1)*13], sort=True)
             )
         # Get dora
         self.dora_indicators = Deck(self.tiles[-5:])

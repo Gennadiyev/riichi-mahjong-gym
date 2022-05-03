@@ -9,9 +9,9 @@ sys.path.insert(0, parent)
 from env.mahjong import MahjongGame
 from env.ruleset import Ruleset
 
-# ruleset = Ruleset()
+ruleset = Ruleset()
 
-# game = MahjongGame(ruleset)
+game = MahjongGame(ruleset, random_seed=0x66ccff)
 
-# game.initialize_game()
-# game.play()
+game.initialize_game()
+game.play()
