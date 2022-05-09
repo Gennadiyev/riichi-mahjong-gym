@@ -285,6 +285,20 @@ class Action:
         '''
         return Action("tsumo", "")
 
+    def RON():
+        '''
+        Method: RON
+
+        ## Description
+
+        This function returns a `RON` action.
+
+        ## Returns
+
+        A `ron` action.
+        '''
+        return Action("ron", "")
+
     def NOOP():
         '''
         Method: NOOP
@@ -342,7 +356,10 @@ class Action:
             else:
                 tile = Tile(id)
                 action_string = action_string.replace(str(id), tile.get_unicode_tile())
-        return str(self.action_type) + " " + action_string
+        if self.action_type == "replace":
+            return action_string
+        else:
+            return str(self.action_type) + " " + action_string
 
     def __str__(self):
         return str(self.action_type) + " " + str(self.action_string)

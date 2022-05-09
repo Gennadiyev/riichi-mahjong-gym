@@ -302,6 +302,42 @@ class Deck:
         if self.sort_always:
             self.sort()
 
+    def append(self, tile: Tile):
+        '''
+        Method: append()
+
+        ## Description
+
+        Adds a tile to the end of the deck.
+
+        ## Parameters
+
+        - `tile`: `Tile`
+            A tile to be added.
+        '''
+        self.push(tile)
+
+    def remove(self, tile: Tile):
+        '''
+        Method: remove()
+
+        ## Description
+
+        Removes a tile from the deck.
+
+        ## Parameters
+
+        - `tile`: `Tile`
+            A tile to be removed.
+
+        ## Raises
+
+        - `ValueError`:
+            If the tile is not in the deck.
+        '''
+        self.remove_tile(tile)
+
+
     def __str__(self):
         return "".join([str(tile) for tile in self.tiles])
     

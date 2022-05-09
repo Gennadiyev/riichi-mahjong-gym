@@ -11,7 +11,7 @@ from env.deck import Deck
 from env.tiles import Tile
 from env.action import Action
 from env.agent import Agent
-from env.utils import check_reach, check_agari, han_count, check_tenpai
+from env.utils import check_reach, check_agari, check_tenpai
 
 def can_chii(tile_list, incoming_tile, obs):
     '''
@@ -38,8 +38,9 @@ def can_chii(tile_list, incoming_tile, obs):
     assert isinstance(tile_list, list)
     assert isinstance(incoming_tile, Tile)
 
+    player_idx = obs["player_idx"]
     # Get the relationship between the player and the active player
-    rel = (obs["active_player"] - obs["player_idx"]) % 4
+    rel = (obs["active_player"] - player_idx) % 4
     # rel == 1 means NEXT
     # rel == 2 means OPPOSING
     # rel == 3 means PREVIOUS
@@ -49,7 +50,9 @@ def can_chii(tile_list, incoming_tile, obs):
         return None
     if rel != 3:
         return None
-    
+    if obs["reach"][player_idx]:
+        return None
+
     def create_chii_string(tile_chii, tile_hand_1, tile_hand_2):
         '''
         Function: create_chii_string(tile_chii: `Tile`, tile_hand_1: `Tile`, tile_hand_2: `Tile`, chii_rel: `int`) -> `str`
@@ -84,6 +87,7 @@ def can_chii(tile_list, incoming_tile, obs):
 
     # Consider red dora as non-red ones
     tile_list_red_dora_nullified = [Tile((tile.get_id() - 50) * 10 + 5) if tile.is_red_dora() else tile for tile in tile_list]
+    incoming_tile_dora_nullified = Tile((incoming_tile.get_id() - 50) * 10 + 5) if incoming_tile.is_red_dora() else incoming_tile
 
     if incoming_tile.get_suit() == "z":
         return None
@@ -91,11 +95,11 @@ def can_chii(tile_list, incoming_tile, obs):
     action_chii = []
     # cX1X2X3
     if incoming_tile.get_rank() <= 7:
-        if Tile(incoming_tile.get_id() + 1) in tile_list_red_dora_nullified and Tile(incoming_tile.get_id() + 2) in tile_list_red_dora_nullified:
+        if Tile(incoming_tile_dora_nullified.get_id() + 1) in tile_list_red_dora_nullified and Tile(incoming_tile_dora_nullified.get_id() + 2) in tile_list_red_dora_nullified:
             # Check for hand red dora
-            if Tile(incoming_tile.get_id() + 1) in tile_list and Tile(incoming_tile.get_id() + 2) in tile_list:
+            if Tile(incoming_tile_dora_nullified.get_id() + 1) in tile_list and Tile(incoming_tile_dora_nullified.get_id() + 2) in tile_list:
                 # No red dora OK
-                action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(incoming_tile.get_id() + 1), Tile(incoming_tile.get_id() + 2))))
+                action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(incoming_tile_dora_nullified.get_id() + 1), Tile(incoming_tile_dora_nullified.get_id() + 2))))
             # chii 3 hand 4 hand dora 5
             if incoming_tile == Tile(13) and Tile(14) in tile_list and Tile(51) in tile_list:
                 action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(14), Tile(51))))
@@ -113,11 +117,11 @@ def can_chii(tile_list, incoming_tile, obs):
             
     # X1cX2X3
     if incoming_tile.get_rank() >= 2 and incoming_tile.get_rank() <= 8:
-        if Tile(incoming_tile.get_id() - 1) in tile_list_red_dora_nullified and Tile(incoming_tile.get_id() + 1) in tile_list_red_dora_nullified:
+        if Tile(incoming_tile_dora_nullified.get_id() - 1) in tile_list_red_dora_nullified and Tile(incoming_tile_dora_nullified.get_id() + 1) in tile_list_red_dora_nullified:
             # Check for hand red dora
-            if Tile(incoming_tile.get_id() - 1) in tile_list and Tile(incoming_tile.get_id() + 1) in tile_list:
+            if Tile(incoming_tile_dora_nullified.get_id() - 1) in tile_list and Tile(incoming_tile_dora_nullified.get_id() + 1) in tile_list:
                 # No red dora OK
-                action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(incoming_tile.get_id() - 1), Tile(incoming_tile.get_id() + 1))))
+                action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(incoming_tile_dora_nullified.get_id() - 1), Tile(incoming_tile_dora_nullified.get_id() + 1))))
             # hand 3 chii 4 hand dora 5
             if incoming_tile == Tile(14) and Tile(13) in tile_list and Tile(51) in tile_list:
                 action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(13), Tile(51))))
@@ -135,11 +139,11 @@ def can_chii(tile_list, incoming_tile, obs):
 
     # X1X2cX3
     if incoming_tile.get_rank() >= 3:
-        if Tile(incoming_tile.get_id() - 1) in tile_list_red_dora_nullified and Tile(incoming_tile.get_id() - 2) in tile_list_red_dora_nullified:
+        if Tile(incoming_tile_dora_nullified.get_id() - 1) in tile_list_red_dora_nullified and Tile(incoming_tile_dora_nullified.get_id() - 2) in tile_list_red_dora_nullified:
             # Check for hand red dora
-            if Tile(incoming_tile.get_id() - 1) in tile_list and Tile(incoming_tile.get_id() - 2) in tile_list:
+            if Tile(incoming_tile_dora_nullified.get_id() - 1) in tile_list and Tile(incoming_tile_dora_nullified.get_id() - 2) in tile_list:
                 # No red dora OK
-                action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(incoming_tile.get_id() - 1), Tile(incoming_tile.get_id() - 2))))
+                action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(incoming_tile_dora_nullified.get_id() - 1), Tile(incoming_tile_dora_nullified.get_id() - 2))))
             # hand 3 hand 4 chii dora 5
             if incoming_tile == Tile(14) and Tile(13) in tile_list and Tile(51) in tile_list:
                 action_chii.append(Action.CHII(create_chii_string(incoming_tile, Tile(13), Tile(51))))
@@ -248,13 +252,45 @@ class Player():
         s = "You: P{} / Current: P{}\n\n".format(obs["player_idx"], obs["active_player"])
         print("You: P{} / Current: P{}\n\n".format(obs["player_idx"], obs["active_player"]))
         s += "Observation:\n"
-        s += "Your Hand: " + obs["hand"].get_unicode_str() + " + " + obs["incoming_tile"].get_unicode_tile() + "\n"
-        s += "Dora Indicators: " + Deck(obs["dora_indicators"]).get_unicode_str() + "\n\n"
+        if obs["incoming_tile"]:
+            s += "Your Hand: " + obs["hand"].get_unicode_str() + " + " + obs["incoming_tile"].get_unicode_tile() + "\n"
+        else:
+            s += "Your Hand: " + obs["hand"].get_unicode_str() + "\n"
         
-        s += "Action space:\n"
+        s += "Dora Indicators: " + Deck(obs["dora_indicators"]).get_unicode_str() + "\n\n"
+        s += "Action space: "
         for i in range(len(action_space)):
-            s += "{:02d}: {}\n".format(i, action_space[i].get_unicode_str())
+            s += "{:02d}: {} ".format(i, action_space[i].get_unicode_str())
+        
+        s += "\n\nDiscarded Tiles:\n"
+        p = -1
+        for discarded_tiles in obs["discarded_tiles"]:
+            p += 1
+            s += "> P{}: {}\n".format(p, Deck(discarded_tiles).get_unicode_str())
 
+        s += "Calls:\n"
+        p = -1
+        for calls in obs["calls"]:
+            p += 1
+            s += "> P{}: ".format(p)
+            for call in calls:
+                action_string = call
+                digits = [int(ch) for ch in action_string if ch.isdigit()]
+                for digit_idx in range(0, len(digits), 2):
+                    id = digits[digit_idx] * 10 + digits[digit_idx+1]
+                    if id == 0:
+                        break
+                    elif id == 60:
+                        id = 0
+                        break
+                    else:
+                        tile = Tile(id)
+                        action_string = action_string.replace(str(id), tile.get_unicode_tile())
+                s += action_string + " / "
+            if len(calls) > 0:
+                s = s[:-3] + "\n"
+            else:
+                s += "-\n"
         # Save to file
         with open("mahjong.hand.txt", "w", encoding="UTF-8") as f:
             f.write(s)
@@ -310,55 +346,67 @@ class Player():
         # Check if the player is active
         if obs["player_state"] == "active":
 
-            # Default: allow discard
-            action_space.append(Action.DISCARD())
+            if obs["incoming_tile"] is None:
+                for tile in hand:
+                    action_space.append(Action.REPLACE(tile.get_id()))
+                return action_space
 
-            # Default: allow replace
-            for tile in hand:
-                action_space.append(Action.REPLACE(tile.get_id()))
+            if obs["reach"][player_idx]:
+                # If the player is in REACH state, he can only discard
+                action_space.append(Action.DISCARD())
+                # Check for tsumo
+                if check_agari(hand, calls): # and han_count(hand, calls) > 0:
+                    action_space.append(Action.TSUMO())
+            else:                
+                # Default: allow discard
+                action_space.append(Action.DISCARD())
 
-            # Merge the incoming tile to the current hand
-            hand.append(obs["incoming_tile"])
-            hand.sort()
-            # Player with incoming tile can call: kan, akan, discard, replace, reach, tsumo
+                # Default: allow replace
+                for tile in hand:
+                    action_space.append(Action.REPLACE(tile.get_id()))
 
-            # Check for kan
-            for call in calls:
-                if call.find("p"):
-                    # Pon found, check for kan
-                    tile_id = int(call[-2:])
-                    if Tile(tile_id) in hand:
-                        action_space.append(Action.KAN(call))
-            
-            # Check for akan
-            same_tile = 0
-            previous_tile = Tile()
-            for tile in hand:
-                if tile == previous_tile:
-                    same_tile += 1
-                else:
-                    same_tile = 0
-                if same_tile == 4:
-                    action_space.append(Action.AKAN(tile.get_id()))
-                previous_tile = tile
+                # Merge the incoming tile to the current hand
+                hand.append(obs["incoming_tile"])
+                hand.sort()
+                # Player with incoming tile can call: kan, akan, discard, replace, reach, tsumo
 
-            # Check for reach
-            if obs["player_credit"][player_idx] >= 1000:
-                reach_discard = check_reach(hand, calls)
-                if reach_discard:
-                    for reach_discard_tile in reach_discard:
-                        # Check whether the tile is incoming
-                        if reach_discard_tile == obs["incoming_tile"]:
-                            action_space.append(Action.REACH(0))
-                            # If also in hand, allow another reach action
-                            if reach_discard_tile in obs["hand"].get_tiles():
+                # Check for kan
+                for call in calls:
+                    if call.find("p") != -1:
+                        # Pon found, check for kan
+                        tile_id = int(call[-2:])
+                        if Tile(tile_id) in hand:
+                            action_space.append(Action.KAN(call))
+                
+                # Check for akan
+                same_tile = 0
+                previous_tile = Tile()
+                for tile in hand:
+                    if tile == previous_tile:
+                        same_tile += 1
+                    else:
+                        same_tile = 0
+                    if same_tile == 4:
+                        action_space.append(Action.AKAN(tile.get_id()))
+                    previous_tile = tile
+
+                # Check for reach
+                if obs["credits"][player_idx] >= 1000 and obs["reach"][player_idx] == False:
+                    reach_discard = check_reach(hand, calls)
+                    if reach_discard:
+                        for reach_discard_tile in reach_discard:
+                            # Check whether the tile is incoming
+                            if reach_discard_tile == obs["incoming_tile"]:
+                                action_space.append(Action.REACH(0))
+                                # If also in hand, allow another reach action
+                                if reach_discard_tile in obs["hand"].get_tiles():
+                                    action_space.append(Action.REACH(reach_discard_tile.get_id()))
+                            else:
                                 action_space.append(Action.REACH(reach_discard_tile.get_id()))
-                        else:
-                            action_space.append(Action.REACH(reach_discard_tile.get_id()))
-            
-            # Check for tsumo
-            if check_agari(hand, calls) and han_count(hand, calls) > 0:
-                action_space.append(Action.TSUMO())
+                
+                # Check for tsumo
+                if check_agari(hand, calls): # and han_count(hand, calls) > 0:
+                    action_space.append(Action.TSUMO())
         
         elif obs["player_state"] == "end_game":
 
@@ -372,7 +420,7 @@ class Player():
             # Always allow noten
             action_space.append(Action.NOTEN())
 
-        elif obs["player_state"] == "passive":
+        elif obs["player_state"] == "passive" or obs["player_state"] == "chankan":
             
             # Passive player can call: chii, pon, mkan, ron, noop
             

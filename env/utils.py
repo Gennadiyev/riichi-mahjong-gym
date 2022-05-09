@@ -5,30 +5,27 @@ Description:
     Utilities used for other modules.
 '''
 
-from numpy import isin
-
-
-def han_count(deck, calls: list = []) -> int:
+def fu_count(deck, calls: list = []) -> int:
     '''
-    Function: han_calculator(deck: `list`) -> `int`
- 
+    Function: fu_count(deck: `list`) -> `int`
+
     ## Description
 
-    Calculates the number of han of a given deck.
- 
+    Calculates the number of fu of a given deck.
+
     ## Parameters
-    
+
     - `deck`: `Deck`
         The target deck.
     - `call`: `list`
         The call list.
 
     ## Returns
-    
+
     `int`
-        The number of han of the given deck.
+        The number of fu of the given deck.
     '''
-    return 1
+    return 20
 
 def check_reach(deck, calls: list = []) -> bool or list:
     '''
