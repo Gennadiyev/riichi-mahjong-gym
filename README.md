@@ -8,6 +8,19 @@ This project is inspired by [RLCard](https://rlcard.org/) and [gym](https://gym.
 
 This project is still WIP. This page will be soon updated!
 
+## Dependencies
+
+Install dependencies by running:
+
+```
+pip install -r requirements.txt
+```
+
+See [requirements.txt](requirements.txt) for more information. The most important dependencies are:
+
+* [mahjong](https://github.com/MahjongRepository/mahjong) - the python utilities for Mahjong.
+* [Flask](https://flask.palletsprojects.com/en/1.1.x/index.html) - the web server used to make manual actions locally.
+
 ## Contributing
 
 **This project is currently locked from contribution, as it is still heavily under development.**
