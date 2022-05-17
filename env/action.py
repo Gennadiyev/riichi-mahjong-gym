@@ -163,6 +163,26 @@ class Action:
         A `chii` action.
         '''
         return Action("chii", chii_string)
+    
+    def PON(pon_string: str):
+        '''
+        Method: PON
+
+        ## Description
+
+        This function returns a `PON` action from the given
+        pon string.
+
+        ## Parameters
+
+        - `pon_string`: `str`
+            The string representation of the action.
+
+        ## Returns
+
+        A `pon` action.
+        '''
+        return Action("pon", pon_string)
 
     def KAN(pon_or_kan_string: str):
         '''
@@ -210,7 +230,16 @@ class Action:
 
         An `akan` action.
         '''
-        akan_string = str(tile_id) * 3 + "a" + str(tile_id)
+        if tile_id % 10 == 5 and tile_id != 45:
+            # The tile is a 5, and a dora will be involved
+            if tile_id == 15:
+                akan_string = "a15151551"
+            elif tile_id == 25:
+                akan_string = "a25252552"
+            elif tile_id == 35:
+                akan_string = "a35353553"
+        else:
+            akan_string = str(tile_id) * 3 + "a" + str(tile_id)
         return Action("akan", akan_string)
 
     def DISCARD():

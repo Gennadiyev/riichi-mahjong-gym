@@ -7,8 +7,9 @@ Description:
 
 import time
 import random
+from matplotlib.pyplot import isinteractive
+from mahjong.tile import TilesConverter
 
-from numpy import isin
 from env.tiles import Tile
 from env.ruleset import Ruleset
 
@@ -150,6 +151,110 @@ class Deck:
         '''
         self.tiles.sort(key=self.__sort_util)
     
+    def get_34_array(self):
+        '''
+        Method: get_34_array()
+
+        ## Description
+
+        Returns the deck in a 34-array format.
+
+        ## Returns
+
+        A 34-element long array.
+
+        ## Details
+
+        This function will create an array with 34 elements, each means
+        the number of tiles of a certain type.
+
+        For example, a deck `12399m123p112233s` will be represented as:
+        
+         1m 2m 3m                9m 1p 2p 3p                   1s 2s 3s
+        [1, 1, 1, 0, 0, 0, 0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+        Note that the array will omit possible dora tiles (0m, 0p, 0s).
+        '''
+        arr = [0] * 34
+        for tile in self.tiles:
+            if tile.get_suit() == "m":
+                arr[tile.get_rank() - 1] += 1
+            elif tile.get_suit() == "p":
+                arr[tile.get_rank() + 8] += 1
+            elif tile.get_suit() == "s":
+                arr[tile.get_rank() + 17] += 1
+            elif tile.get_suit() == "z":
+                arr[tile.get_rank() + 26] += 1
+        return arr
+
+    def get_136_array(self):
+        '''
+        Method: get_136_array()
+
+        ## Description
+
+        Returns the deck in a 136-array format.
+
+        ## Returns
+
+        An array that has length equal to the length of the deck, with
+        each element representing a tile. The tile will be represented
+        as a number between 0 and 135.
+
+        ## Details
+
+        This function will create an array with 136 elements, each
+        represents a tile. The mapping is as follows:
+
+        - 0~3: 1m
+        - 4~7: 2m
+        - 8~11: 3m
+        ...
+        - 32~35: 9m
+        - 36~39: 1p
+        - 40~43: 2p
+        ...
+        - 68~71: 9p
+        - 72~75: 1s
+        ...
+        - 104~107: 9s
+        - 108~111: 1z
+        ...
+        - 132~135: 7z
+
+        The DORA will always be the first one in the four tiles:
+
+        - 16: 0m
+        - 53: 0p
+        - 88: 0s
+
+        ## Examples
+
+        A deck `12355m123p011224s` will be represented as:
+
+        [0, 4, 8, 17, 18, 36, 40, 44, 88, 72, 73, 76, 77, 84]
+
+        mapping:
+
+        0 -> 1m
+        4 -> 2m
+        8 -> 3m
+        17 -> 5m (not dora)
+        18 -> 5m (not dora)
+
+        36 -> 1p
+        40 -> 2p
+        44 -> 3p
+
+        72 -> 1s
+        73 -> 1s
+        76 -> 2s
+        77 -> 2s
+        84 -> 4s
+        88 -> 0s (dora)
+        '''
+        return TilesConverter().one_line_string_to_136_array(self.get_short_string())
+
     def parse_list(self, tile_list: list):
         '''
         Method: parse_list(list: `list`)
@@ -211,6 +316,53 @@ class Deck:
         A string that represents the deck.
         '''
         return self.__str__()
+
+    def get_short_string(self):
+        '''
+        Method: get_short_string()
+
+        ## Description
+
+        Returns the deck in a string format, e.g.
+        `123m01235p123s111z`.
+
+        ## Returns
+
+        A string that represents the deck.
+        '''
+        man = []
+        pin = []
+        sou = []
+        char = []
+        for tile in self.tiles:
+            assert isinstance(tile, Tile)
+            if tile.get_suit() == "m":
+                man.append(tile.get_name()[0])
+            elif tile.get_suit() == "p":
+                pin.append(tile.get_name()[0])
+            elif tile.get_suit() == "s":
+                sou.append(tile.get_name()[0])
+            else:
+                char.append(tile.get_name()[0])
+        # Sort each list
+        man.sort()
+        pin.sort()
+        sou.sort()
+        char.sort()
+        # Create output string
+        output_str = ""
+        if len(man) != 0:
+            output_str += ("".join(man) + "m")
+        if len(pin) != 0:
+            output_str += ("".join(pin) + "p")
+        if len(sou) != 0:
+            output_str += ("".join(sou) + "s")
+        if len(char) != 0:
+            output_str += ("".join(char) + "z")
+        return output_str
+
+
+        
 
     def get_tiles(self):
         '''
@@ -337,7 +489,6 @@ class Deck:
         '''
         self.remove_tile(tile)
 
-
     def __str__(self):
         return "".join([str(tile) for tile in self.tiles])
     
@@ -417,7 +568,7 @@ class Wall(Deck):
     replacements = None
     mountain = None
 
-    def __init__(self, ruleset: Ruleset, random_seed: int = None, tiles: list or str or None = None):
+    def __init__(self, ruleset: Ruleset, random_seed: int = None, tiles: list or str or None = None, from_file: str or None = None):
         '''
         Constructor: __init__
 
@@ -463,7 +614,7 @@ class Wall(Deck):
         '''
         assert isinstance(ruleset, Ruleset), "Invalid ruleset, expected `Ruleset` object."
         self.ruleset = ruleset
-        if tiles is None:
+        if tiles is None and from_file is None:
             # Set random seed
             random_seed = random_seed if random_seed is not None else int(time.time())
             random.seed(random_seed)
@@ -538,8 +689,15 @@ class Wall(Deck):
             self.tiles = self.parse_list(tiles)
             self.game_split()
         else:
-            self.tiles = self.parse_list(tiles)
-            self.game_split()
+            if from_file is not None:
+                import json
+                with open(from_file, 'r') as f:
+                    tiles = json.load(f)
+                self.tiles = self.parse_list(tiles)
+                self.game_split()
+            else:
+                self.tiles = self.parse_list(tiles)
+                self.game_split()
         
     def game_split(self):
         '''
@@ -641,3 +799,23 @@ class Wall(Deck):
         Returns the mountain.
         '''
         return self.mountain
+    
+    def save_tiles(self, filename: str):
+        '''
+        Method: save_tiles(self, filename)
+            
+        ## Description
+
+        Saves the tiles to a file so as to allow replication of the game.
+
+        ## Parameters
+
+        - filename: The filename to save the tiles to.
+
+        ## Details
+
+        The file will be saved as a JSON file
+        '''
+        import json
+        with open(filename, "w") as f:
+            json.dump([t.get_id() for t in self.tiles], f)

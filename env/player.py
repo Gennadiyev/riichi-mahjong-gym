@@ -89,6 +89,7 @@ def can_chii(tile_list, incoming_tile, obs):
     tile_list_red_dora_nullified = [Tile((tile.get_id() - 50) * 10 + 5) if tile.is_red_dora() else tile for tile in tile_list]
     incoming_tile_dora_nullified = Tile((incoming_tile.get_id() - 50) * 10 + 5) if incoming_tile.is_red_dora() else incoming_tile
 
+    # If the tile is a character, no chii is possible
     if incoming_tile.get_suit() == "z":
         return None
     
@@ -161,6 +162,110 @@ def can_chii(tile_list, incoming_tile, obs):
 
     if len(action_chii) > 0:
         return action_chii
+    else:
+        return None
+
+def can_pon(tile_list, incoming_tile, obs):
+    '''
+    Function: can_pon(tile_list: `list`, incoming_tile: `Tile`) -> `bool`
+    
+    ## Description
+    
+    Checks whether a given tile can be pon.
+    
+    ## Parameters
+    
+    - `tile_list`: `list`
+        The list of tiles.
+    - `incoming_tile`: `Tile`
+        The incoming tile.
+    - `obs`: `dict`
+        The observation of the game.
+    
+    ## Returns
+    
+    `None` or `list`
+        `None` if no pon possible, a `list` of `Actions` if pon is possible.
+    '''
+    assert isinstance(tile_list, list)
+    assert isinstance(incoming_tile, Tile)
+
+    player_idx = obs['player_idx']
+    # Get the relationship between the player and the active player
+    rel = (obs["active_player"] - player_idx) % 4
+    # rel == 1 means NEXT
+    # rel == 2 means OPPOSING
+    # rel == 3 means PREVIOUS
+    # rel == 0 means SELF
+
+    if obs["reach"][player_idx]:
+        return None
+    
+    def create_pon_string(tile_pon, tile_hand_1, tile_hand_2, rel):
+        '''
+        Function: create_pon_string(tile_pon: `Tile`, rel: `int`) -> `str`
+
+        ## Description
+
+        Creates a pon string.
+
+        ## Parameters
+
+        - `tile_pon`: `Tile`
+            The tile to pon.
+        - `tile_hand_1`: `Tile`
+            The first tile in the hand.
+        - `tile_hand_2`: `Tile`
+            The second tile in the hand.
+        - `rel`: `int`
+            The relationship between the player and the active player.
+
+        ## Returns
+
+        `str`
+            The pon string.
+        '''
+        assert isinstance(tile_pon, Tile)
+        assert isinstance(tile_hand_1, Tile)
+        assert isinstance(tile_hand_2, Tile)
+
+        tile_hand_1, tile_hand_2 = tile_hand_1.get_id(), tile_hand_2.get_id()
+        tile_pon = tile_pon.get_id()
+
+        if rel == 1:
+            return "{}{}p{}".format(tile_hand_1, tile_hand_2, tile_pon)
+        elif rel == 2:
+            return "{}p{}{}".format(tile_hand_1, tile_pon, tile_hand_2)
+        elif rel == 3:
+            return "p{}{}{}".format(tile_pon, tile_hand_1, tile_hand_2)
+
+    # Count the tiles in the list
+    identicals = []
+    for tile in tile_list:
+        if tile.get_rank() == incoming_tile.get_rank() and tile.get_suit() == incoming_tile.get_suit():
+            identicals.append(tile)
+    
+    action_pon = []
+
+    if incoming_tile.get_rank() == 5:
+        if len(identicals) >= 2:
+            # Check for hand red dora
+            non_red_dora = 0
+            for tile in identicals:
+                if tile.is_red_dora():
+                    # There is red dora in hand
+                    action_pon.append(Action.PON(create_pon_string(tile, incoming_tile, incoming_tile, rel)))
+                else:
+                    non_red_dora += 1
+            if non_red_dora >= 2:
+                # No red dora OK
+                action_pon.append(Action.PON(create_pon_string(incoming_tile, incoming_tile, incoming_tile, rel)))
+    else:
+        if len(identicals) >= 2:
+            action_pon.append(Action.PON(create_pon_string(incoming_tile, incoming_tile, incoming_tile, rel)))
+
+    if len(action_pon) > 0:
+        return action_pon
     else:
         return None
 
@@ -251,7 +356,7 @@ class Player():
             return action_space[0]
         s = "You: P{} / Current: P{}\n\n".format(obs["player_idx"], obs["active_player"])
         print("You: P{} / Current: P{}\n\n".format(obs["player_idx"], obs["active_player"]))
-        s += "Observation:\n"
+        s += "Observation: (STILL {} TILES)\n".format(obs["tiles_left"])
         if obs["incoming_tile"]:
             s += "Your Hand: " + obs["hand"].get_unicode_str() + " + " + obs["incoming_tile"].get_unicode_tile() + "\n"
         else:
@@ -379,13 +484,13 @@ class Player():
                             action_space.append(Action.KAN(call))
                 
                 # Check for akan
-                same_tile = 0
+                same_tile = 1
                 previous_tile = Tile()
                 for tile in hand:
-                    if tile == previous_tile:
+                    if tile.get_rank() == previous_tile.get_rank() and tile.get_suit() == previous_tile.get_suit():
                         same_tile += 1
                     else:
-                        same_tile = 0
+                        same_tile = 1
                     if same_tile == 4:
                         action_space.append(Action.AKAN(tile.get_id()))
                     previous_tile = tile
@@ -436,7 +541,10 @@ class Player():
                 # action_space.append(Action.CHII(can_chii_ret))
 
             # Check for pon
-            # TODO
+
+            can_pon_ret = can_pon(hand, incoming_tile, obs)
+            if can_pon_ret is not None:
+                action_space += can_pon_ret
 
             # Check for mkan
             # TODO
@@ -444,7 +552,10 @@ class Player():
             # Check for ron
             hand.append(incoming_tile)
             if check_agari(hand, calls):
-                action_space.append(Action.RON())
+                _, yaku = check_agari(hand, calls)
+                # Only kokushi mosou can be ronned upon ankan
+                if yaku == "kokushi_musou" or not "is_ankan" in obs:
+                    action_space.append(Action.RON())
             
             # Check for chankan
             # TODO

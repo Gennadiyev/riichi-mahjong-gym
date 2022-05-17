@@ -7,6 +7,7 @@ Description:
 '''
 
 import random
+
 class Agent:
     '''
     Class: Agent

@@ -27,6 +27,8 @@ def test_no_agari():
     assert not check_agari(no_agari_deck_winds, [])
     no_agari_deck_not_full = Deck("123s455p56m")
     assert not check_agari(no_agari_deck_not_full, ["4242p42"])
+    no_agari_deck_not_full_again = Deck("3s1p")
+    assert not check_agari(no_agari_deck_not_full_again, ["4242p42", "c151617", "c171819", "c373839"])
 
 def test_agari():
     agari_deck = Deck("123m456p789s11z")
@@ -41,9 +43,12 @@ def test_agari():
     assert check_agari(agari_deck_4, [])
     agari_deck_5 = Deck("233444556p11122z")
     assert check_agari(agari_deck_5, [])
-    agari_deck_6 = Deck("123p444s99z")
-    assert check_agari(agari_deck_6, ["35k533535"])
+    agari_deck_6 = Deck("789p2267s0s")
+    assert check_agari(agari_deck_6, ["c262524", "c373638"])
+    agari_deck_7 = Deck("55z")
+    assert check_agari(agari_deck_7, ["ak111z", "ak222z", "ak333z", "ak444z"])
 
+test_agari()
 # Riichi test
 
 def test_riichi():

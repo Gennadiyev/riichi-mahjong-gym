@@ -32,7 +32,45 @@ class Tile:
     - `41` ~ `47`: ton, nan, shaa, pei, haku, hatsu, chun
     - `51` ~ `53`: Red dora 5 man, 5 pin, 5 sou 
     '''
-
+    mapping_136 = {
+        51: 16,
+        11: 0,
+        12: 4,
+        13: 8,
+        14: 12,
+        15: 17,
+        16: 20,
+        17: 24,
+        18: 28,
+        19: 32,
+        52: 52,
+        21: 36,
+        22: 40,
+        23: 44,
+        24: 48,
+        25: 53,
+        26: 56,
+        27: 60,
+        28: 64,
+        29: 68,
+        53: 88,
+        31: 72,
+        32: 76,
+        33: 80,
+        34: 84,
+        35: 89,
+        36: 92,
+        37: 96,
+        38: 100,
+        39: 104,
+        41: 108,
+        42: 112,
+        43: 116,
+        44: 120,
+        45: 124,
+        46: 128,
+        47: 132
+    }
     id = None
     hidden_id = None
     valid_id = [0, 
@@ -265,6 +303,82 @@ class Tile:
         '''
         return self.__id_to_str()
     
+    def get_136_id(self) -> int:
+        '''
+        Method: get_136_id
+
+        ## Description
+
+        Returns the ID of the tile in 136-tile format. This should not be
+        used because it is not guaranteed to be unique. A 136-tile ID is
+        only meaningful in a deck's context.
+
+        ## Returns
+
+        - `int`: ID of the tile in 136-tile format
+
+        ## Details
+
+        This function will return a number in range [0, 135].
+        
+        The mapping is as follows:
+
+        - 0~3: 1m
+        - 4~7: 2m
+        - 8~11: 3m
+        ...
+        - 32~35: 9m
+        - 36~39: 1p
+        - 40~43: 2p
+        ...
+        - 68~71: 9p
+        - 72~75: 1s
+        ...
+        - 104~107: 9s
+        - 108~111: 1z
+        ...
+        - 132~135: 7z
+
+        The DORA will always be the first one in the four tiles:
+
+        - 16: 0m
+        - 52: 0p
+        - 88: 0s
+        '''
+        return self.mapping_136[self.id]
+
+    def get_34_id(self) -> int:
+        '''
+        Method: get_34_id
+
+        ## Description
+
+        Returns the ID of the tile in 34-tile format.
+
+        ## Returns
+
+        - `int`: ID of the tile in 34-tile format
+
+        ## Details
+
+        This function will return a number in range [0, 33].
+        
+        The mapping is as follows:
+
+        - 0~8: 1~9m
+        - 9~17: 1~9p
+        - 18~26: 1~9s
+        - 27~33: 1~7z
+        '''
+        if self.get_suit() == "m":
+            return self.get_rank() - 1
+        elif self.get_suit() == "p":
+            return self.get_rank() + 8
+        elif self.get_suit() == "s":
+            return self.get_rank() + 17
+        elif self.get_suit() == "z":
+            return self.get_rank() + 26
+        
     def get_unicode_tile(self) -> str:
         '''
         Method: get_unicode_tile
