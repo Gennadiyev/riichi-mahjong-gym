@@ -232,6 +232,23 @@ class MahjongGame():
             # Perform action
             discarded_tile = self.perform_action(action, obs)
             if action.action_type == "kan" or action.action_type == "akan" or action.action_type == "mkan" or action.action_type == "nukidora":
+                # Check for Suukaikan
+                kans = []
+                for i in range(len(self.players)):
+                    for call in self.state["calls"][i]:
+                        if call.find("k") != -1:
+                            kans.append(i)
+                if len(kans) >= 5 or len(kans) == 4 and len(set(kans)) != 1:
+                    self.end_game({
+                        "reason": "suukaikan",
+                        "credits": [0, 0, 0, 0]
+                    })
+                # Add one dora indicator
+                self.state["dora_revealed"] += 1
+                # kan cancels all ippatsu
+                self.state["ippatsu"] = [
+                    False for i in range(len(self.players))
+                ]
                 rinshan_continue = True
                 self.state["rinshan"] = True
                 # Rinshan draw
@@ -307,18 +324,27 @@ class MahjongGame():
                 "is_tsumo": False,
                 "is_wall_empty": len(self.wall.mountain) == 0
             })
+            # Create winning deck
+            winning_deck = self.hands[player_idx]
+            for call in state["calls"][player_idx]:
+                tiles_in_call = get_tiles_from_call(call)
+                for tile in tiles_in_call:
+                    winning_deck += tile
+            winning_deck += obs["incoming_tile"]
+            dora_indicators = self.wall.get_dora_indicators()[0:self.state["dora_revealed"]]
             agari_output = get_value(
-                deck=self.hands[player_idx] + obs["incoming_tile"],
+                deck=winning_deck,
                 incoming_tile = obs["incoming_tile"],
                 melds=self.state["calls"][player_idx],
                 game_state=state,
                 ruleset=self.ruleset,
+                dora_indicators=dora_indicators
             )
             print(agari_output)
             print("{} 番 {} 符，{} 点".format(agari_output.han, agari_output.fu, agari_output.cost['main']))
             print("役：{}".format(", ".join([str(yaku) for yaku in agari_output.yaku])))
-            credits[player_idx] = 1
-            credits[ron_from] -= 1
+            credits[player_idx] = agari_output.cost['main']
+            credits[ron_from] -= agari_output.cost['main']
         elif ron_or_tsumo == "tsumo":
             # Calculate tsumo credits
             state.update({
@@ -326,18 +352,28 @@ class MahjongGame():
                 "is_tsumo": True,
                 "is_wall_empty": len(self.wall.mountain) == 0
             })
+            winning_deck = self.hands[player_idx]
+            for call in state["calls"][player_idx]:
+                tiles_in_call = get_tiles_from_call(call)
+                for tile in tiles_in_call:
+                    winning_deck += tile
+            winning_deck += obs["incoming_tile"]
+            dora_indicators = self.wall.get_dora_indicators()[0:self.state["dora_revealed"]]
+            ura_dora_indicators = self.wall.get_ura_dora_indicators()[0:self.state["dora_revealed"]]
+            dora_indicators += ura_dora_indicators
             agari_output = get_value(
-                deck=self.hands[player_idx],
+                deck=winning_deck,
                 incoming_tile = obs["incoming_tile"],
                 melds=self.state["calls"][player_idx],
                 game_state=state,
                 ruleset=self.ruleset,
+                dora_indicators = dora_indicators
             )
             print(agari_output)
             print("{} 番 {} 符，{} 点".format(agari_output.han, agari_output.fu, agari_output.cost['main']))
             print("役：{}".format(", ".join([str(yaku) for yaku in agari_output.yaku])))
-            credits[0] = credits[1] = credits[2] = credits[3] = -0.333
-            credits[player_idx] = 1
+            credits[0] = credits[1] = credits[2] = credits[3] = -agari_output.cost['additional']
+            credits[player_idx] = agari_output.cost['main']
         return credits
             
     def perform_action(self, action: Action, obs: dict = None):
@@ -393,30 +429,53 @@ class MahjongGame():
                         self.perform_action(action, chankan_obs)
                     else:
                         self.perform_action(action, chankan_obs)
-            # Check for Suukaikan
-            kans = []
-            for i in range(len(self.players)):
-                for call in self.state["calls"][i]:
-                    if call.find("k") != -1:
-                        kans.append(i)
-            if len(kans) >= 5 or len(kans) == 4 and len(set(kans)) != 1:
-                self.end_game({
-                    "reason": "suukaikan",
-                    "credits": [0, 0, 0, 0]
-                })
-            # Add one dora indicator
-            self.state["dora_revealed"] += 1
-            # kan cancels all ippatsu
-            self.state["ippatsu"] = [
-                False for i in range(len(self.players))
-            ]
             return None
         elif action.action_type == "mkan":
-            # Add one dora indicator
-            self.state["dora_revealed"] += 1
-            self.state["ippatsu"] = [
-                False for i in range(len(self.players))
-            ]
+            # 明槓
+            player_idx = obs["player_idx"]
+            # Add the incoming tile to player's hand
+            self.hands[player_idx] += obs["incoming_tile"]
+            # Remove kanned tiles
+            tiles_kanned = get_tiles_from_call(action.action_string)
+            for tile_kanned in tiles_kanned:
+                try:
+                    self.hands[player_idx].remove(tile_kanned)
+                except ValueError:
+                    raise MahjongRuleError("Ankan failed: player {} does not have tile {}".format(player_idx, tile_kanned), self)
+            # Append to the calls
+            self.state["calls"][player_idx].append(action.action_string)
+            # Whether the rest players can call ron due to chankan
+            for i in range(len(self.players)):
+                if i != player_idx:
+                    chankan_obs = self.get_observation(i, {
+                        "player_state": "chankan",
+                        "is_ankan": True,
+                        "incoming_tile": tile
+                    })
+                    action = self.players[i].act(chankan_obs)
+                    self.record(chankan_obs, action)
+                    if action.action_type == "ron":
+                        self.state["chankan"] = True
+                        self.perform_action(action, chankan_obs)
+                    else:
+                        self.perform_action(action, chankan_obs)
+            # # Check for Suukaikan
+            # kans = []
+            # for i in range(len(self.players)):
+            #     for call in self.state["calls"][i]:
+            #         if call.find("k") != -1:
+            #             kans.append(i)
+            # if len(kans) >= 5 or len(kans) == 4 and len(set(kans)) != 1:
+            #     self.end_game({
+            #         "reason": "suukaikan",
+            #         "credits": [0, 0, 0, 0]
+            #     })
+            # # Add one dora indicator
+            # self.state["dora_revealed"] += 1
+            # kan cancels all ippatsu
+            # self.state["ippatsu"] = [
+            #     False for i in range(len(self.players))
+            # ]
         elif action.action_type == "akan":
             # 暗槓
             player_idx = obs["player_idx"]
@@ -449,23 +508,6 @@ class MahjongGame():
                         self.perform_action(action, chankan_obs)
                     else:
                         self.perform_action(action, chankan_obs)
-            # Check for Suukaikan
-            kans = []
-            for i in range(len(self.players)):
-                for call in self.state["calls"][i]:
-                    if call.find("k") != -1:
-                        kans.append(i)
-            if len(kans) >= 5 or len(kans) == 4 and len(set(kans)) != 1:
-                self.end_game({
-                    "reason": "suukaikan",
-                    "credits": [0, 0, 0, 0]
-                })
-            # Add one dora indicator
-            self.state["dora_revealed"] += 1
-            # kan cancels all ippatsu
-            self.state["ippatsu"] = [
-                False for i in range(len(self.players))
-            ]
             return None
         elif action.action_type == "chii":
             player_idx = obs["player_idx"]

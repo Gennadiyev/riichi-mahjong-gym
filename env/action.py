@@ -395,3 +395,18 @@ class Action:
     
     def __repr__(self):
         return "Action({}, '{}')".format(self.action_type, self.action_string)
+
+    def to_json(self):
+        return {
+            "action_type": self.action_type,
+            "action_string": self.action_string
+        }
+
+    def __eq__(self, other):
+        return self.action_type == other.action_type and self.action_string == other.action_string
+    
+    def __hash__(self):
+        return hash(self.action_type) * hash(self.action_string)
+    
+    def __neq__(self, other):
+        return not self.__eq__(other)

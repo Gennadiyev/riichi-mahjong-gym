@@ -7,7 +7,6 @@ Description:
 
 import time
 import random
-from matplotlib.pyplot import isinteractive
 from mahjong.tile import TilesConverter
 
 from env.tiles import Tile
@@ -361,9 +360,6 @@ class Deck:
             output_str += ("".join(char) + "z")
         return output_str
 
-
-        
-
     def get_tiles(self):
         '''
         Method: get_tiles()
@@ -551,6 +547,15 @@ class Deck:
                 return False
             that.remove(tile)
         return True
+
+    def to_json(self):
+        return {
+            "tiles": [
+                tile.get_unicode_tile() for tile in self.tiles
+            ]
+        }
+        
+
 
 class Wall(Deck):
     '''

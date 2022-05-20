@@ -5,7 +5,6 @@ Description:
     Utilities used for other modules.
 '''
 
-from dataclasses import is_dataclass
 from mahjong.hand_calculating.hand import HandCalculator
 from mahjong.tile import TilesConverter
 from mahjong.hand_calculating.hand_config import HandConfig, OptionalRules
@@ -16,7 +15,7 @@ __shanten = Shanten()
 __hand_calculator = HandCalculator()
 __tiles_converter = TilesConverter()
 
-def get_value(deck, incoming_tile, melds: list = [], game_state = None, ruleset = None, deduce: bool = False, **kwargs) -> int:
+def get_value(deck, incoming_tile, melds: list = [], game_state = None, ruleset = None, deduce: bool = False, dora_indicators: list = [], **kwargs) -> int:
     '''
     Function: get_value(deck: `list`) -> `int`
 
@@ -285,7 +284,6 @@ def shanten_count(deck) -> int:
     `int`
         The shanten count of the hand
     '''
-    raise NotImplementedError("Shanten counter has been deprecated.")
     from env.deck import Deck
     from env.tiles import Tile
 
@@ -297,28 +295,6 @@ def shanten_count(deck) -> int:
     result = __shanten.calculate_shanten(tiles_34=tiles_34_array)
 
     return result
-
-def fu_count(deck, calls: list = []) -> int:
-    '''
-    Function: fu_count(deck: `list`) -> `int`
-
-    ## Description
-
-    Calculates the number of fu of a given deck.
-
-    ## Parameters
-
-    - `deck`: `Deck`
-        The target deck.
-    - `call`: `list`
-        The call list.
-
-    ## Returns
-
-    `int`
-        The number of fu of the given deck.
-    '''
-    return 20
 
 def check_reach(deck, calls: list = []) -> bool or list:
     '''

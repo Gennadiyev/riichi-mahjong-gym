@@ -602,4 +602,9 @@ class Tile:
         '''
         return hash(self.id + self.hidden_id)
     
-
+    def to_json(self):
+        return {
+            "id": self.id,
+            "unicode": self.get_unicode_tile(),
+            "text": self.__id_to_str(),
+        }

@@ -1,0 +1,4 @@
+numpy
+flask
+mahjong==1.1.11
+json
