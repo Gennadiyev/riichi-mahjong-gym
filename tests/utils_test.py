@@ -43,12 +43,7 @@ def test_agari():
     assert check_agari(agari_deck_4, [])
     agari_deck_5 = Deck("233444556p11122z")
     assert check_agari(agari_deck_5, [])
-    agari_deck_6 = Deck("789p2267s0s")
-    assert check_agari(agari_deck_6, ["c262524", "c373638"])
-    agari_deck_7 = Deck("55z")
-    assert check_agari(agari_deck_7, ["ak111z", "ak222z", "ak333z", "ak444z"])
-
-test_agari()
+    
 # Riichi test
 
 def test_riichi():

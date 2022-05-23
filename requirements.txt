@@ -1,4 +1,4 @@
 numpy
 flask
-mahjong==1.1.11
+mahjong==1.2.0
 json
