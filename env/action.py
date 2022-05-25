@@ -115,13 +115,13 @@ class Action:
 
         ### `ron`
 
-        Call ron (ron, 和了).
+        Call ron (ron, ロン).
 
         (no action string)
 
         ### `tsumo`
 
-        Call tsumo (tsumo, 自摸).
+        Call tsumo (tsumo, ツモ).
 
         (no action string)
 
@@ -134,7 +134,7 @@ class Action:
 
         ### `noten`
 
-        Call noten (noten, ノーテン), i.e. the player does NOT
+        Call noten (noten, 不聴), i.e. the player does NOT
         have a waiting hand by the end of a game.
 
         (no action string) 
@@ -153,8 +153,6 @@ class Action:
         
         ## Parameters
         
-        - `tile_id`: `int`
-            The id of the tile.
         - `chii_string`: `str`
             The string representation of the action.
 
@@ -371,6 +369,18 @@ class Action:
         return Action("noten", "")
     
     def get_unicode_str(self):
+        '''
+        Method: get_unicode_str
+
+        ## Description
+
+        This function returns the unicode string representation
+        of the action string.
+
+        ## Returns
+
+        A `str` representing the unicode string.
+        '''
         from env.tiles import Tile
         # Extract digits from action string
         action_string = self.action_string
@@ -390,11 +400,39 @@ class Action:
         else:
             return str(self.action_type) + " " + action_string
 
+    def get_tiles(self):
+        '''
+        Method: get_tiles
+
+        ## Description
+
+        This function returns the tiles from the action string.
+
+        ## Returns
+
+        A `list` of `Tile` objects.
+        '''
+        from env.tiles import Tile
+        # Extract digits from action string
+        action_string = self.action_string
+        digits = [int(ch) for ch in action_string if ch.isdigit()]
+        tiles = []
+        for digit_idx in range(0, len(digits), 2):
+            id = digits[digit_idx] * 10 + digits[digit_idx+1]
+            if id == 0:
+                break
+            elif id == 60:
+                id = 0
+                break
+            else:
+                tiles.append(Tile(id))
+        return tiles
+
     def __str__(self):
         return str(self.action_type) + " " + str(self.action_string)
     
     def __repr__(self):
-        return "Action({}, '{}')".format(self.action_type, self.action_string)
+        return "Action('{}', '{}')".format(self.action_type, self.action_string)
 
     def to_json(self):
         return {
