@@ -4,6 +4,8 @@ Your agent, or model, interacts with the environment by selecting actions from t
 
 An `Action` is a class that describes an action that can be performed.
 
+If you'd like to use this project for development purpose, please refer to the [`Action` class documentation](docs/classes/action.md).
+
 ## Action types and action strings
 
 Here is the list of possible action types:
@@ -114,7 +116,7 @@ hand by the end of a game.
 
 ### `noten`
 
-Call noten (noten, ノーテン), i.e. the player does NOT
+Call noten (noten, 不聴), i.e. the player does NOT
 have a waiting hand by the end of a game.
 
 *(no action string)*

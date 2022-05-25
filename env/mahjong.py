@@ -5,7 +5,7 @@ Description:
     The backend of the mahjong game.
 '''
 
-from env.deck import Deck, Wall
+from env.deck import Wall
 from env.ruleset import Ruleset
 from env.player import Player
 from env.action import Action
@@ -29,6 +29,7 @@ class MahjongRuleError(Exception):
         os.makedirs('errors_log', exist_ok=True)
         with open('error_log/' + error_id + '.pkl', 'wb') as f:
             pickle.dump(self.world_state, f)
+        print("!!! If you run into this error, please contact the author with the pickle file attached. !!!\n")
         return "MahjongRuleError: {}\nError ID: {} (state dumped to error_log/{}.pkl)".format(self.message, error_id, error_id)
 
 class MahjongEndGame(Exception):
@@ -110,7 +111,7 @@ class MahjongGame():
         for i in range(ruleset.get_rule("players")):
             self.players.append(Player("Player {}".format(i+1), is_manual=True))
         # Initialize game state
-        self.state = {}
+        self.initialize_game()
 
     def set_player(self, player_idx: int, player: Player):
         '''
@@ -127,6 +128,7 @@ class MahjongGame():
         - `player`: `Player`
             The player to set.
         '''
+        assert player_idx < len(self.players), "Set player {} but only {} players exist.".format(player_idx, len(self.players))
         self.players[player_idx] = player
         
     def initialize_game(self):
@@ -184,6 +186,13 @@ class MahjongGame():
         ## Description
 
         Records the action.
+
+        ## Parameters
+
+        - `obs`: `dict`
+            The observation.
+        - `action`: `dict`
+            The action.
         '''
         self.history["actions"].append((obs, action))
         with open("game-log.log", "w") as f:
@@ -637,13 +646,18 @@ class MahjongGame():
         elif action.action_type == "noten":
             pass
 
-    def get_observation(self, player_idx: int, additional_dict: dict = []) -> dict:
+    def get_observation(self, player_idx: int, additional_dict: dict = {}) -> dict:
         '''
         Method: get_observation()
 
         ## Description
         
         Gets the observation of the player.
+
+        ## Parameters
+
+        - `player_idx`: The index of the player to get the observation of.
+        - `additional_dict`: A dictionary of additional information to include in the observation.
         '''
         
         obs = {}
@@ -676,6 +690,20 @@ class MahjongGame():
         # Merge additional dict
         obs.update(additional_dict)
         return obs
+
+    def get_state(self) -> dict:
+        '''
+        Method: get_state()
+
+        ## Description
+        
+        Gets the state of the game.
+
+        ## Returns
+
+        A `dict` of the state of the game.
+        '''
+        return self.state
 
     def play(self):
         '''
