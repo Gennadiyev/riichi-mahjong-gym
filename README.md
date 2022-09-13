@@ -1,4 +1,4 @@
-# Riichi Mahjong Gym
+# Riichi Mahjong Gym (WIP)
 
 ![Pytest Status](https://img.shields.io/github/workflow/status/Gennadiyev/riichi-mahjong-gym/Pytest?label=pytest&style=flat-square) ![Last Commit](https://img.shields.io/github/last-commit/Gennadiyev/riichi-mahjong-gym?style=flat-square) ![Code Size](https://img.shields.io/github/languages/code-size/Gennadiyev/riichi-mahjong-gym?style=flat-square)
 
