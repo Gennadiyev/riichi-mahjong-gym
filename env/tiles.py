@@ -90,7 +90,7 @@ class Tile:
 
         ## Parameters
 
-        - `constructor`: `tile` or `str` or `int`
+        - `constructor`: `Tile` or `str` or `int`
 
         ## Details
 
@@ -103,7 +103,7 @@ class Tile:
         - `"1p"` ~ `"9p"`: 1~9 pin
         - `"1s"` ~ `"9s"`: 1~9 sou
         - `"1z"` ~ `"7z"`: ton, nan, shaa, pei, haku, hatsu, chun
-        - `"0m", "0p", "0s": Red dora 5 man, 5 pin, 5 sou
+        - `"0m"`, `"0p"`, `"0s"`: Red dora 5 man, 5 pin, 5 sou
 
         If the constructor is an integer, the tile object is created from the
         number.
@@ -393,15 +393,15 @@ class Tile:
         '''
         if self.id == 0:
             return ""
-        elif self.id < 10:
-            return "(invalid)"
-        elif self.id < 20:
+        elif self.id <= 10:
+            return "?"
+        elif self.id <= 19 and self.id >= 11:
             return man_tiles[self.id - 11]
-        elif self.id < 30:
+        elif self.id <= 29 and self.id >= 21:
             return pin_tiles[self.id - 21]
-        elif self.id < 40:
+        elif self.id <= 39 and self.id >= 31:
             return sou_tiles[self.id - 31]
-        elif self.id < 50:
+        elif self.id <= 47 and self.id >= 41:
             return char_tiles[self.id - 41]
         elif self.id == 51:
             return man_tiles[4]
@@ -410,7 +410,7 @@ class Tile:
         elif self.id == 53:
             return sou_tiles[4]
         else:
-            return "(invalid)"
+            return "?"
 
     def is_red_dora(self) -> bool:
         '''
@@ -586,7 +586,7 @@ class Tile:
 
         - `str`: string representation of the tile
         '''
-        return "tile(" + str(self.id) + ")"
+        return "Tile(" + str(self.id) + ")"
 
     def __hash__(self):
         '''
